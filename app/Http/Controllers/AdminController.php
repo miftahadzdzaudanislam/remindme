@@ -13,9 +13,21 @@ class AdminController extends Controller
     // Display the admin dashboard
     public function dashboardAdmin()
     {
-        $mahasiswaCount = User::where('role', 'mahasiswa')->count();
+        $totalStudents = User::where('role', 'mahasiswa')->where('status', '!=', 'suspended')->count();
 
-        return Inertia::render('dashboard/admin', compact('mahasiswaCount'));
+        $activeToday = Log::whereDate('created_at', today())
+            ->distinct('user_id')
+            ->count('user_id');
+
+        $totalActivities = Log::where('created_at', '>=', now()->subDays(7))->count();
+
+        $recentLogs = Log::with('user')
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return Inertia::render('dashboard/admin', 
+            compact('totalStudents', 'activeToday', 'totalActivities', 'recentLogs'));
     }
 
     // Display the user management page

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Log;
 use App\Models\MataKuliah;
 use App\Models\Tugas;
 use Illuminate\Http\Request;
@@ -59,6 +60,14 @@ class MahasiswaController extends Controller
             'jam' => 'required|string|max:50',
             'ruangan' => 'required|string|max:50',
         ]);
+
+        Log::create([
+            'user_id' => $user->id,
+            'activity' => 'Tambah Mata Kuliah',
+            'details' => "Menambahkan mata kuliah: {$validatedData['nama_matkul']}",
+            'ip_address' => $request->ip(),
+        ]);
+
 
         $validatedData['jam'] = date('H:i', strtotime($validatedData['jam']));
         $validatedData['user_id'] = $user->id;
@@ -137,6 +146,13 @@ class MahasiswaController extends Controller
 
         $tugas = Tugas::create($validatedData);
 
+        Log::create([
+            'user_id' => $user->id,
+            'activity' => 'Tambah Tugas',
+            'details' => "Menambahkan tugas: {$tugas->judul}",
+            'ip_address' => $request->ip(),
+        ]);
+
         $this->kirimReminderTugas($user->phone_number, $tugas);
 
         return redirect()->route('tugas.index')->with('success', 'Tugas berhasil ditambahkan.');
@@ -162,6 +178,14 @@ class MahasiswaController extends Controller
         $oldDeadline = $tugas->deadline;
         $tugas->update($validatedData);
 
+        Log::create([
+            'user_id' => $user->id,
+            'activity' => 'Ubah Tugas',
+            'details' => "Mengubah tugas: {$tugas->judul}",
+            'ip_address' => $request->ip(),
+        ]);
+
+
         if ($oldDeadline !== $validatedData['deadline']) {
             $this->hapusReminderTugas($tugas->id);
             $this->kirimReminderTugas($user->phone_number, $tugas);
@@ -171,7 +195,7 @@ class MahasiswaController extends Controller
     }
 
     // Delete a Tugas
-    public function destroyTugas(Tugas $tugas)
+    public function destroyTugas(Request $request, Tugas $tugas)
     {
         $user = Auth::user();
 
@@ -181,6 +205,14 @@ class MahasiswaController extends Controller
 
         $this->hapusReminderTugas($tugas->id);
         $tugas->delete();
+
+        Log::create([
+            'user_id' => $user->id,
+            'activity' => 'Hapus Tugas',
+            'details' => "Menghapus tugas: {$tugas->judul}",
+            'ip_address' => $request->ip(),
+        ]);
+
 
         return redirect()->route('tugas.index')->with('success', 'Tugas berhasil dihapus.');
     }
@@ -197,6 +229,16 @@ class MahasiswaController extends Controller
         $tugas->is_done = !$tugas->is_done;
         $tugas->save();
 
+        $status = $tugas->is_done ? 'Selesai' : 'Belum Selesai';
+
+        Log::create([
+            'user_id' => $user->id,
+            'activity' => 'Ubah Status Tugas',
+            'details' => "Menandai tugas '{$tugas->judul}' sebagai $status",
+            'ip_address' => request()->ip(),
+        ]);
+
+
         return back()->with('success', 'Status tugas berhasil diubah.');
     }
 
@@ -207,8 +249,9 @@ class MahasiswaController extends Controller
             return;
         }
 
-        $token = "44yUGmctjhYuiIPpB8yIiMog98UQwB84D3z0qiXaGUvgbKwLpvWL73i";
-        $secret = "KWTSbVnC";
+        $urlSendMessage = env('WABLAS_API_SEND_MESSAGE');
+        $token = env('WABLAS_TOKEN');
+        $secret = env('WABLAS_SECRET');
         $accessKey = "$token.$secret";
 
         $tgl3hariSebelum = now()->parse($tugas->deadline)->subDays(3)->startOfDay();
@@ -233,7 +276,7 @@ class MahasiswaController extends Controller
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
-            curl_setopt($curl, CURLOPT_URL, "https://texas.wablas.com/api/send-message"); // API untuk kirim pesan langsung
+            curl_setopt($curl, CURLOPT_URL, $urlSendMessage); // API untuk kirim pesan langsung
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
 
@@ -247,8 +290,9 @@ class MahasiswaController extends Controller
     // Delete Reminder for Tugas
     private function hapusReminderTugas($tugasId)
     {
-        $token = "44yUGmctjhYuiIPpB8yIiMog98UQwB84D3z0qiXaGUvgbKwLpvWL73i";
-        $secret = "KWTSbVnC";
+        $reminderBaseUrl = env('WABLAS_API_REMINDER');
+        $token = env('WABLAS_TOKEN');
+        $secret = env('WABLAS_SECRET');
         $accessKey = "$token.$secret";
 
         foreach (['H3', 'H0'] as $suffix) {
@@ -259,7 +303,7 @@ class MahasiswaController extends Controller
             ]);
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_URL, "https://texas.wablas.com/api/reminder/{$id}");
+            curl_setopt($curl, CURLOPT_URL, "{$reminderBaseUrl}/{$id}");
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
             curl_exec($curl);

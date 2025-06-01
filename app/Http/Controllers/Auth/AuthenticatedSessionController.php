@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Log;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,6 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
 
         $user = Auth::user();
@@ -40,6 +40,13 @@ class AuthenticatedSessionController extends Controller
             $user->last_login_at = now();
             $user->status = 'active';
             $user->save();
+
+            Log::create([
+                'user_id' => $user->id,
+                'activity' => 'Login',
+                'details' => 'User logged in successfully.',
+                'ip_address' => $request->ip(),
+            ]);
         }
 
         if ($user->role === 'admin') {
@@ -56,6 +63,13 @@ class AuthenticatedSessionController extends Controller
     {
         $user = Auth::user();
         if ($user instanceof User) {
+            Log::create([
+                'user_id' => $user->id,
+                'activity' => 'Logout',
+                'details' => 'User logged out successfully.',
+                'ip_address' => $request->ip(),
+            ]);
+
             $user->status = 'inactive';
             $user->save();
         }
