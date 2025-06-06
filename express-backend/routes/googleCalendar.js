@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const { google } = require('googleapis');
-const express = require('express');
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,

@@ -28,7 +28,7 @@ export default function GoogleLoginButton({ setIsSignedIn }: { setIsSignedIn: (v
         setIsSignedIn(true);
         localStorage.setItem('google_signed_in', '1');
         alert('Login Google berhasil!');
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Gagal login Google:', err.response?.data || err.message);
         alert('Gagal login Google Calendar');
       }
