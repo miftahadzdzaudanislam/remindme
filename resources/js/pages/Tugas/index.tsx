@@ -1,15 +1,15 @@
-import { PageProps } from '@inertiajs/core';
-import { router } from '@inertiajs/react';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { PageProps } from '@inertiajs/core';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import React, { useState } from 'react';
-import { Textarea } from '@/components/ui/textarea';
-import InputError from '@/components/input-error';
+import { Edit, Trash } from "lucide-react";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -43,7 +43,16 @@ export default function Index() {
     const [editingTugas, setEditingTugas] = useState<Tugas | null>(null);
     const { mata_kuliahs, tugas } = usePage<IndexProps>().props;
 
-    const { data, setData, post, put, processing, reset, errors, delete: destroy } = useForm({
+    const {
+        data,
+        setData,
+        post,
+        put,
+        processing,
+        reset,
+        errors,
+        delete: destroy,
+    } = useForm({
         mata_kuliah_id: 0,
         judul: '',
         deskripsi: '',
@@ -98,10 +107,11 @@ export default function Index() {
             <Head title="Tugas Mahasiswa" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <h1 className="text-xl font-semibold">Daftar Tugas</h1>
-                <div className="flex justify-end mb-4">
+                <div className="mb-4 flex justify-end">
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
                             <Button
+                                className="cursor-pointer bg-violet-500 text-white hover:bg-violet-700 hover:text-white"
                                 variant="outline"
                                 onClick={() => {
                                     reset();
@@ -109,16 +119,14 @@ export default function Index() {
                                     setIsDialogOpen(true);
                                 }}
                             >
-                                Tambah Tugas +
+                                + Tambah Tugas
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[425px]">
                             <DialogHeader>
                                 <DialogTitle>{editingTugas ? 'Edit Tugas' : 'Tambah Tugas'}</DialogTitle>
                                 <DialogDescription>
-                                    {editingTugas
-                                        ? 'Edit data tugas di bawah ini.'
-                                        : 'Isi form berikut untuk menambahkan tugas baru.'}
+                                    {editingTugas ? 'Edit data tugas di bawah ini.' : 'Isi form berikut untuk menambahkan tugas baru.'}
                                 </DialogDescription>
                             </DialogHeader>
                             <form onSubmit={handleSubmit}>
@@ -126,11 +134,11 @@ export default function Index() {
                                     <Label htmlFor="judul">Judul</Label>
                                     <Input
                                         id="judul"
-                                        type='text'
+                                        type="text"
                                         tabIndex={1}
-                                        placeholder='Masukkan judul tugas'
+                                        placeholder="Masukkan judul tugas"
                                         value={data.judul}
-                                        onChange={e => setData('judul', e.target.value)}
+                                        onChange={(e) => setData('judul', e.target.value)}
                                         required
                                     />
                                     <InputError message={errors.judul} className="mt-2" />
@@ -139,9 +147,9 @@ export default function Index() {
                                     <Textarea
                                         id="deskripsi"
                                         tabIndex={2}
-                                        placeholder='Masukkan deskripsi tugas'
+                                        placeholder="Masukkan deskripsi tugas"
                                         value={data.deskripsi}
-                                        onChange={e => setData('deskripsi', e.target.value)}
+                                        onChange={(e) => setData('deskripsi', e.target.value)}
                                     />
                                     <InputError message={errors.deskripsi} className="mt-2" />
 
@@ -151,7 +159,7 @@ export default function Index() {
                                         type="date"
                                         tabIndex={3}
                                         value={data.deadline}
-                                        onChange={e => setData('deadline', e.target.value)}
+                                        onChange={(e) => setData('deadline', e.target.value)}
                                         required
                                     />
                                     <InputError message={errors.deadline} className="mt-2" />
@@ -161,7 +169,7 @@ export default function Index() {
                                         id="prioritas"
                                         tabIndex={4}
                                         value={data.prioritas}
-                                        onChange={e => setData('prioritas', e.target.value)}
+                                        onChange={(e) => setData('prioritas', e.target.value)}
                                         required
                                     >
                                         <option value="low">Low</option>
@@ -175,11 +183,11 @@ export default function Index() {
                                         id="mata_kuliah_id"
                                         tabIndex={5}
                                         value={data.mata_kuliah_id}
-                                        onChange={e => setData('mata_kuliah_id', Number(e.target.value))}
+                                        onChange={(e) => setData('mata_kuliah_id', Number(e.target.value))}
                                         required
                                     >
                                         <option value="">-- Pilih Mata Kuliah --</option>
-                                        {mata_kuliahs.map(mk => (
+                                        {mata_kuliahs.map((mk) => (
                                             <option key={mk.id} value={mk.id}>
                                                 {mk.nama_matkul}
                                             </option>
@@ -207,62 +215,55 @@ export default function Index() {
                         </DialogContent>
                     </Dialog>
                 </div>
-                <table className="table-auto w-full border">
-                    <thead>
+                <table className="w-full table-auto border">
+                    <thead className="bg-violet-500 text-white">
                         <tr>
-                            <th className="p-2 border">No.</th>
-                            <th className="p-2 border">Judul</th>
-                            <th className="p-2 border">Deskripsi</th>
-                            <th className="p-2 border">Deadline</th>
-                            <th className="p-2 border">Prioritas</th>
-                            <th className="p-2 border">Mata Kuliah</th>
-                            <th className="p-2 border">Aksi</th>
-                            <th className='p-2 border'>Status</th>
+                            <th className="border border-gray-400 p-2">No.</th>
+                            <th className="border border-gray-400 p-2">Judul</th>
+                            <th className="border border-gray-400 p-2">Deskripsi</th>
+                            <th className="border border-gray-400 p-2">Deadline</th>
+                            <th className="border border-gray-400 p-2">Prioritas</th>
+                            <th className="border border-gray-400 p-2">Mata Kuliah</th>
+                            <th className="border border-gray-400 p-2">Aksi</th>
+                            <th className="border border-gray-400 p-2">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {tugas.length === 0 && (
                             <tr>
-                                <td colSpan={6} className="text-center p-4 border">
+                                <td colSpan={6} className="border p-4 text-center">
                                     Belum ada tugas.
                                 </td>
                             </tr>
                         )}
                         {tugas.map((tgs, idx) => (
-                            <tr key={tgs.id}>
-                                <td className="p-2 border">{idx + 1}</td>
-                                <td className="p-2 border">{tgs.judul}</td>
-                                <td className="p-2 border">{tgs.deskripsi}</td>
-                                <td className="p-2 border">
+                            <tr key={tgs.id} className="odd:bg-gray-100 even:bg-white hover:bg-violet-100">
+                                <td className="border border-gray-400 p-2">{idx + 1}</td>
+                                <td className="border border-gray-400 p-2">{tgs.judul}</td>
+                                <td className="border border-gray-400 p-2">{tgs.deskripsi}</td>
+                                <td className="border border-gray-400 p-2">
                                     {new Date(tgs.deadline).toLocaleDateString('id-ID', {
                                         day: '2-digit',
                                         month: '2-digit',
                                         year: 'numeric',
                                     })}
                                 </td>
-                                <td className="p-2 border">{tgs.prioritas}</td>
-                                <td className="p-2 border">
-                                    {mata_kuliahs.find(mk => mk.id === tgs.mata_kuliah_id)?.nama_matkul ?? tgs.mata_kuliah_id}
+                                <td className="border border-gray-400 p-2">{tgs.prioritas}</td>
+                                <td className="border border-gray-400 p-2">
+                                    {mata_kuliahs.find((mk) => mk.id === tgs.mata_kuliah_id)?.nama_matkul ?? tgs.mata_kuliah_id}
                                 </td>
-                                <td className="p-2 border">
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => handleEdit(tgs)}
-                                        className="mr-2"
-                                    >
-                                        Edit
+                                <td className="space-x-2 border border-gray-400 p-2 text-center">
+                                    <Button size="icon" variant="outline" onClick={() => handleEdit(tgs)} className="h-8 w-8 bg-transparent hover:bg-transparent cursor-pointer">
+                                        <Edit className="h-5 w-5 text-yellow-600" />
                                     </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        onClick={() => handleDelete(tgs.id, tgs.judul)}
-                                    >
-                                        Hapus
+
+                                    <Button size="icon" variant="destructive" onClick={() => handleDelete(tgs.id, tgs.judul)} className="h-8 w-8 bg-transparent hover:bg-transparent cursor-pointer">
+                                        <Trash className="h-5 w-5 text-red-600" />
                                     </Button>
                                 </td>
-                                <td className="p-2 border text-center">
+                                <td className="border border-gray-400 p-2 text-center">
                                     <input
+                                        className="h-5 w-5 cursor-pointer accent-green-700"
                                         type="checkbox"
                                         checked={tgs.is_done}
                                         onChange={() => router.patch(route('tugas.toggle', tgs.id))}
