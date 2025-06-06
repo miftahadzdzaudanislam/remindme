@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('role')->default('mahasiswa');
             $table->string('jurusan')->nullable();
             $table->string('phone_number')->nullable();
-            $table->text('google_token')->nullable();
+            $table->text('google_refresh_token')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

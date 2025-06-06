@@ -10,7 +10,7 @@ class MataKuliah extends Model
     use HasFactory;
     protected $table = "mata_kuliahs";
 
-    protected $fillable = ['user_id', 'nama_matkul', 'nama_dosen', 'hari', 'jam', 'ruangan'];
+    protected $fillable = ['user_id', 'nama_matkul', 'nama_dosen', 'hari', 'jam', 'ruangan', 'sync_google', 'google_event_id'];
 
     public function user() {
         return $this->belongsTo(User::class);

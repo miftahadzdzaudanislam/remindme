@@ -11,6 +11,9 @@ Route::get('/', function () {
 Route::get('/test-calendar', function () {
     return view('index');
 })->name('test.calendar');
+Route::get('/calendar', function() {
+    return Inertia::render('TesCalendar');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['admin'])->prefix('admin')->group(function () {
@@ -59,6 +62,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('tugas.destroy');
         Route::patch('/tugas/{tugas}/toggle', [MahasiswaController::class, 'toggleTugas'])
             ->name('tugas.toggle');
+
+        // Routes for Google Token
+        Route::post('/store-google-token', [MahasiswaController::class, 'storeGoogleToken'])
+            ->name('mahasiswa.store-google-token');
     });
 });
 
