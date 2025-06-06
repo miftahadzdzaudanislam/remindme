@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('hari');
             $table->time('jam');
             $table->string('ruangan');
+            $table->boolean('sync_to_google')->default(false);
             $table->timestamps();
         });
     }

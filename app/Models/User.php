@@ -30,7 +30,7 @@ class User extends Authenticatable
         'status',
         'last_login_at',
         'phone_number',
-        'google_token'
+        'google_refresh_token'
     ];
 
     /**

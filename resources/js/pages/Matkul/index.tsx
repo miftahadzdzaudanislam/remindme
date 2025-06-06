@@ -6,8 +6,11 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import InputError from '@/components/input-error';
+import GoogleLoginButton from '@/components/GoogleLoginButton';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { Switch } from '@/components/ui/switch';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -33,14 +36,50 @@ export default function Index() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingMatkul, setEditingMatkul] = useState<MataKuliah | null>(null);
     const { mata_kuliahs } = usePage<IndexProps>().props;
+    const [isSignedIn, setIsSignedIn] = useState(false);
+    const [calendarActive, setCalendarActive] = useState(false);
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-    const {data, setData, post, put, processing, reset, errors, delete: destroy} = useForm({
+    const {data, setData, post, put, processing, reset, errors, delete: destroy} = useForm<{
+        nama_matkul: string;
+        nama_dosen: string;
+        hari: string;
+        jam: string;
+        ruangan: string;
+        sync_to_google: boolean;
+    }>({
         nama_matkul: '',
         nama_dosen: '',
         hari: '',
         jam: '',
         ruangan: '',
+        sync_to_google: false,
     });
+
+    useEffect(() => {
+        if (localStorage.getItem('google_signed_in') === '1') {
+            setIsSignedIn(true);
+        }
+
+        const calendarStatus = localStorage.getItem('calendar_active');
+        setCalendarActive(calendarStatus === '1');
+        setData('sync_to_google', calendarStatus === '1');
+    }, [setData]);    
+
+    const handleCalendarToggle = (checked: boolean) => {
+        setCalendarActive(checked);
+        setData('sync_to_google', checked);
+        localStorage.setItem('calendar_active', checked ? '1' : '0');
+    };
+
+    const handleGoogleLogout = () => {
+        const confirmed = confirm("Apakah Anda yakin ingin logout dari akun Google?");
+        if (!confirmed) return;
+
+        setIsSignedIn(false);
+        localStorage.removeItem('google_signed_in');
+    };
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault(); 
@@ -73,6 +112,7 @@ export default function Index() {
             hari: matkul.hari,
             jam: matkul.jam,
             ruangan: matkul.ruangan,
+            sync_to_google: calendarActive
         });
         setEditingMatkul(matkul);
         setIsDialogOpen(true);
@@ -98,7 +138,8 @@ export default function Index() {
                                 onClick={() => {
                                     reset();
                                     setEditingMatkul(null);
-                                    setIsDialogOpen(true); 
+                                    setIsDialogOpen(true);
+                                    setData('sync_to_google', calendarActive);
                                 }}
                             >
                                 Tambah Jadwal +
@@ -171,6 +212,7 @@ export default function Index() {
                                             setIsDialogOpen(false);
                                             reset();
                                             setEditingMatkul(null);
+                                            setCalendarActive(false)
                                         }}>
                                         Batal
                                     </Button>
@@ -182,6 +224,23 @@ export default function Index() {
                         </DialogContent>
                     </Dialog>
                 </div>
+
+                <div className="mb-6">
+                {!isSignedIn ? (
+                    <GoogleOAuthProvider clientId={clientId}>
+                    <GoogleLoginButton setIsSignedIn={setIsSignedIn} />
+                    </GoogleOAuthProvider>
+                ) : (
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="calendarToggle" className="text-sm text-gray-700 font-medium">Aktifkan Google Calendar</label>
+                        <Switch id="calendarToggle" checked={calendarActive} onCheckedChange={handleCalendarToggle} />
+                        <Button variant="destructive" onClick={handleGoogleLogout}>
+                        Logout Google
+                        </Button>
+                    </div>
+                )}
+                </div>
+                
                 <table className="table-auto w-full border">
                     <thead>
                         <tr>

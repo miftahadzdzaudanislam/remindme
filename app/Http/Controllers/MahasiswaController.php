@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Log;
 use App\Models\MataKuliah;
 use App\Models\Tugas;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Http;
 
 class MahasiswaController extends Controller
 {
@@ -59,6 +62,7 @@ class MahasiswaController extends Controller
             'hari' => 'required|string|max:50',
             'jam' => 'required|string|max:50',
             'ruangan' => 'required|string|max:50',
+            'sync_to_google' => 'nullable|boolean',
         ]);
 
         Log::create([
@@ -72,7 +76,26 @@ class MahasiswaController extends Controller
         $validatedData['jam'] = date('H:i', strtotime($validatedData['jam']));
         $validatedData['user_id'] = $user->id;
 
-        MataKuliah::create($validatedData);
+        // Sinkronisasi ke Google Calendar jika diminta
+        if ($request->sync_to_google && $user->google_refresh_token) {
+            $englishDay = $this->getEnglishDay($validatedData['hari']);
+            $startDateTime = now()->next($englishDay)->format('Y-m-d') . 'T' . $validatedData['jam'] . ':00';
+
+            $response = Http::post('http://localhost:4000/api/create-event', [
+                'summary' => $validatedData['nama_matkul'],
+                'description' => 'Dosen: ' . $validatedData['nama_dosen'],
+                'location' => $validatedData['ruangan'],
+                'startDate' => $startDateTime,
+                'endDate' => Carbon::parse($startDateTime)->addHour()->toIso8601String(),
+                'refresh_token' => $user->google_refresh_token,
+                'recurrence' => [
+                    "RRULE:FREQ=WEEKLY;BYDAY=" . $this->getGoogleDayCode($validatedData['hari'])
+                ],
+            ]);
+            $eventId = optional($response->json()['data'])['id'] ?? null;
+            $validatedData['google_event_id'] = $eventId;
+        }
+        $matkul = MataKuliah::create($validatedData);
 
         return redirect()->route('matkul.index')->with('success', 'Mata Kuliah berhasil ditambahkan.');
     }
@@ -92,10 +115,30 @@ class MahasiswaController extends Controller
             'hari' => 'required|string|max:50',
             'jam' => 'required|string|max:50',
             'ruangan' => 'required|string|max:50',
+            'sync_to_google' => 'nullable|boolean',
         ]);
 
         $validatedData['jam'] = date('H:i', strtotime($validatedData['jam']));
         $mata_kuliah->update($validatedData);
+
+        // Update event di Google Calendar jika sync aktif dan sudah pernah sinkron
+        if ($user->google_refresh_token && $mata_kuliah->google_event_id) {
+            $englishDay = $this->getEnglishDay($validatedData['hari']);
+            $startDateTime = now()->next($englishDay)->format('Y-m-d') . 'T' . $validatedData['jam'] . ':00';
+
+            $response = Http::put('http://localhost:4000/api/update-event', [
+                'eventId' => $mata_kuliah->google_event_id,
+                'summary' => $validatedData['nama_matkul'],
+                'description' => 'Dosen: ' . $validatedData['nama_dosen'],
+                'location' => $validatedData['ruangan'],
+                'startDate' => $startDateTime,
+                'endDate' => Carbon::parse($startDateTime)->addHour()->toIso8601String(),
+                'refresh_token' => $user->google_refresh_token,
+                'recurrence' => [
+                    "RRULE:FREQ=WEEKLY;BYDAY=" . $this->getGoogleDayCode($validatedData['hari'])
+                ],
+            ]);
+        }
 
         return redirect()->route('matkul.index')->with('success', 'Mata Kuliah berhasil diperbarui.');
     }
@@ -107,6 +150,14 @@ class MahasiswaController extends Controller
 
         if ($mata_kuliah->user_id !== $user->id) {
             return redirect()->route('matkul.index')->with('error', 'Anda tidak memiliki akses untuk menghapus mata kuliah ini.');
+        }
+
+        // Hapus event Google Calendar jika ada
+        if ($mata_kuliah->google_event_id && $user->google_refresh_token) {
+            $response = Http::delete('http://localhost:4000/api/delete-event', [
+                'eventId' => $mata_kuliah->google_event_id,
+                'refresh_token' => $user->google_refresh_token,
+            ]);
         }
 
         $mata_kuliah->delete();
@@ -309,6 +360,49 @@ class MahasiswaController extends Controller
             curl_exec($curl);
             curl_close($curl);
         }
+    }
+
+    // Store Google Refresh Token
+    public function storeGoogleToken(Request $request)
+    {
+        $request->validate([
+            'google_refresh_token' => 'required|string',
+        ]);
+
+        $user = User::find(Auth::id());
+        $user->google_refresh_token = $request->google_refresh_token;
+        $user->save();
+
+        return response()->json(['message' => 'Google token saved']);
+    }
+
+    // Get Google Day
+    private function getGoogleDayCode($hari)
+    {
+        $map = [
+            'senin' => 'MO',
+            'selasa' => 'TU',
+            'rabu' => 'WE',
+            'kamis' => 'TH',
+            'jumat' => 'FR',
+            'sabtu' => 'SA',
+            'minggu' => 'SU',
+        ];
+        return $map[strtolower($hari)] ?? 'MO';
+    }
+
+    private function getEnglishDay($hari)
+    {
+        $map = [
+            'senin' => 'Monday',
+            'selasa' => 'Tuesday',
+            'rabu' => 'Wednesday',
+            'kamis' => 'Thursday',
+            'jumat' => 'Friday',
+            'sabtu' => 'Saturday',
+            'minggu' => 'Sunday',
+        ];
+        return $map[strtolower($hari)] ?? 'Monday';
     }
 
 }

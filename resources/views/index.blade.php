@@ -12,7 +12,7 @@
     <button id="signout_button" onclick="handleSignoutClick()">Sign Out</button>
 
     <pre id="content" style="white-space: pre-wrap;"></pre>
-
+a
     <script>
       // Inject env vars from Laravel .env to JS
       const CLIENT_ID = "{{ env('VITE_GOOGLE_CLIENT_ID') }}";
