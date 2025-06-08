@@ -4,8 +4,12 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+const HOST = process.env.HOST || 'localhost';
+const PORT = process.env.PORT || 3000;
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN
+
 app.use(cors({
-  origin: 'http://localhost:8000', 
+  origin: CLIENT_ORIGIN, 
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
@@ -33,5 +37,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 @ http://localhost:${PORT}`));
+app.listen(PORT, HOST, () => console.log(`🚀 @ http://${HOST}:${PORT}`));

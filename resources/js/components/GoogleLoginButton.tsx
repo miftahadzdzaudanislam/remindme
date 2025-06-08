@@ -8,6 +8,7 @@ export default function GoogleLoginButton({ setIsSignedIn }: { setIsSignedIn: (v
     onSuccess: async codeResponse => {
       console.log('Google login success response:', codeResponse);
       const { code } = codeResponse;
+      const API_URL = import.meta.env.VITE_API_URL;
 
       if (!code) {
         alert('Code kosong dari Google, login gagal.');
@@ -16,7 +17,7 @@ export default function GoogleLoginButton({ setIsSignedIn }: { setIsSignedIn: (v
 
       try {
         // Dapatkan refresh_token dari Express
-        const { data } = await axios.post('http://localhost:4000/api/create-token', { code });
+        const { data } = await axios.post(`${API_URL}/api/create-token`, { code });
         if (!data.refresh_token) {
           alert('refresh_token tidak ditemukan. Pastikan user login dengan consent screen.');
           return;
