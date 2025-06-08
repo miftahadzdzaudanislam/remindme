@@ -1,16 +1,21 @@
-import { PageProps } from '@inertiajs/core';
+// Import tambahan
+import Swal from 'sweetalert2';
+
+// ... import lainnya tetap
+import GoogleLoginButton from '@/components/GoogleLoginButton';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import { PageProps } from '@inertiajs/core';
 import { Head, useForm, usePage } from '@inertiajs/react';
-import React, { useEffect, useState } from 'react';
-import InputError from '@/components/input-error';
-import GoogleLoginButton from '@/components/GoogleLoginButton';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { Switch } from '@/components/ui/switch';
+import { Edit, LogOut, Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -40,14 +45,16 @@ export default function Index() {
     const [calendarActive, setCalendarActive] = useState(false);
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-    const {data, setData, post, put, processing, reset, errors, delete: destroy} = useForm<{
-        nama_matkul: string;
-        nama_dosen: string;
-        hari: string;
-        jam: string;
-        ruangan: string;
-        sync_to_google: boolean;
-    }>({
+    const {
+        data,
+        setData,
+        post,
+        put,
+        processing,
+        reset,
+        errors,
+        delete: destroy,
+    } = useForm({
         nama_matkul: '',
         nama_dosen: '',
         hari: '',
@@ -64,7 +71,7 @@ export default function Index() {
         const calendarStatus = localStorage.getItem('calendar_active');
         setCalendarActive(calendarStatus === '1');
         setData('sync_to_google', calendarStatus === '1');
-    }, [setData]);    
+    }, [setData]);
 
     const handleCalendarToggle = (checked: boolean) => {
         setCalendarActive(checked);
@@ -73,37 +80,51 @@ export default function Index() {
     };
 
     const handleGoogleLogout = () => {
-        const confirmed = confirm("Apakah Anda yakin ingin logout dari akun Google?");
-        if (!confirmed) return;
-
-        setIsSignedIn(false);
-        localStorage.removeItem('google_signed_in');
+        Swal.fire({
+            title: 'Logout Google?',
+            text: 'Apakah Anda yakin ingin logout dari akun Google?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, logout',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#1E63B0',
+            cancelButtonColor: '#d33'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setIsSignedIn(false);
+                localStorage.removeItem('google_signed_in');
+                Swal.fire('Berhasil!', 'Anda telah logout dari akun Google.', 'success');
+            }
+        });
     };
 
-
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault(); 
-        
-        if (editingMatkul) {
-            put(route('matkul.update', editingMatkul.id), {
-                onSuccess: () => {
-                    reset();
-                    setIsDialogOpen(false);
-                    setEditingMatkul(null);
-                },
-            });
-        } else {
-            post(route('matkul.store'), {
-                onSuccess: () => {
-                    reset();
-                    setIsDialogOpen(false);
-                },
-                onError: () => {
-                    setEditingMatkul(null);
-                },
-            });
-        }
-    }
+        e.preventDefault();
+
+        const successMessage = editingMatkul ? 'Jadwal berhasil diperbarui!' : 'Jadwal berhasil ditambahkan!';
+
+        const action = editingMatkul
+            ? put(route('matkul.update', editingMatkul.id), {
+                  onSuccess: () => {
+                      Swal.fire('Berhasil!', successMessage, 'success');
+                      reset();
+                      setIsDialogOpen(false);
+                      setEditingMatkul(null);
+                  },
+              })
+            : post(route('matkul.store'), {
+                  onSuccess: () => {
+                      Swal.fire('Berhasil!', successMessage, 'success');
+                      reset();
+                      setIsDialogOpen(false);
+                  },
+                  onError: () => {
+                      setEditingMatkul(null);
+                  },
+              });
+
+        return action;
+    };
 
     const handleEdit = (matkul: MataKuliah) => {
         setData({
@@ -112,29 +133,73 @@ export default function Index() {
             hari: matkul.hari,
             jam: matkul.jam,
             ruangan: matkul.ruangan,
-            sync_to_google: calendarActive
+            sync_to_google: calendarActive,
         });
         setEditingMatkul(matkul);
         setIsDialogOpen(true);
     };
 
-
     const handleDelete = (id: number, nama_matkul: string) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus jadwal mata kuliah "${nama_matkul}"?`)) {
-            destroy(route('matkul.destroy', id));
-        }
-    }
+        Swal.fire({
+            title: 'Hapus Jadwal?',
+            text: `Apakah Anda yakin ingin menghapus jadwal "${nama_matkul}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, hapus',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#1E63B0',
+            cancelButtonColor: '#d33'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                destroy(route('matkul.destroy', id), {
+                    onSuccess: () => {
+                        Swal.fire('Dihapus!', `Jadwal "${nama_matkul}" berhasil dihapus.`, 'success');
+                    },
+                });
+            }
+        });
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Jadwal Mata Kuliah" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <h1 className="text-xl font-semibold">Jadwal Mata Kuliah</h1>
-                <div className="flex justify-end mb-4">
+                <h1 className="text-3xl font-semibold text-indigo-800 dark:text-white">Jadwal Mata Kuliah</h1>
+
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                        {!isSignedIn ? (
+                            <GoogleOAuthProvider clientId={clientId}>
+                                <GoogleLoginButton setIsSignedIn={setIsSignedIn} />
+                            </GoogleOAuthProvider>
+                        ) : (
+                            <>
+                                <label htmlFor="calendarToggle" className="text-sm font-medium text-gray-700">
+                                    Aktifkan Google Calendar
+                                </label>
+                                <Switch
+                                    className="cursor-pointer data-[state=checked]:bg-[#1E63B0]"
+                                    id="calendarToggle"
+                                    checked={calendarActive}
+                                    onCheckedChange={handleCalendarToggle}
+                                />
+                                <Button
+                                    variant="outline"
+                                    className="flex cursor-pointer items-center gap-2 rounded-xl border-red-500 text-red-600 transition-all hover:bg-red-50 hover:text-red-700"
+                                    onClick={handleGoogleLogout}
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                    Logout Google
+                                </Button>
+                            </>
+                        )}
+                    </div>
+
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button 
+                            <Button
                                 variant="outline"
+                                className="cursor-pointer bg-[#1E63B0] text-white hover:bg-[#174a7a] hover:text-white"
                                 onClick={() => {
                                     reset();
                                     setEditingMatkul(null);
@@ -142,81 +207,93 @@ export default function Index() {
                                     setData('sync_to_google', calendarActive);
                                 }}
                             >
-                                Tambah Jadwal +
+                                + Tambah Jadwal
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[425px]">
                             <DialogHeader>
                                 <DialogTitle>{editingMatkul ? 'Edit Jadwal' : 'Tambah Jadwal'}</DialogTitle>
-                                <DialogDescription className='flex text-center text-sm'>
+                                <DialogDescription>
                                     Isi form berikut untuk {editingMatkul ? 'mengedit' : 'menambah'} jadwal mata kuliah baru.
                                 </DialogDescription>
                             </DialogHeader>
                             <form onSubmit={handleSubmit}>
-                                <div className="grid gap-4">
-                                    <Label htmlFor="nama_matkul">Nama Mata Kuliah</Label>
-                                    <Input 
-                                        id="nama_matkul" 
-                                        type='text' 
-                                        tabIndex={1}
-                                        placeholder="Contoh: Pemrograman Web" value={data.nama_matkul}
-                                        onChange={(e) => setData('nama_matkul', e.target.value)}
-                                        required
-                                    />
-                                    <InputError message={errors.nama_matkul} />
-                                    
-                                    <Label htmlFor="nama_dosen">Dosen</Label>
-                                    <Input 
-                                        id="nama_dosen" 
-                                        type='text' 
-                                        tabIndex={2}
-                                        placeholder="Contoh: Dr. John Doe" value={data.nama_dosen}
-                                        onChange={(e) => setData('nama_dosen', e.target.value)}
-                                        required
-                                    />
-                                    <InputError message={errors.nama_dosen} />
-                                    
-                                    <Label htmlFor="hari">Hari</Label>
-                                    <select id="hari" value={data.hari} tabIndex={3}
-                                        onChange={(e) => setData('hari', e.target.value)} required>
-                                        <option value="">-- Pilih hari --</option>
-                                        <option value="Senin">Senin</option>
-                                        <option value="Selasa">Selasa</option>
-                                        <option value="Rabu">Rabu</option>
-                                        <option value="Kamis">Kamis</option>
-                                        <option value="Jumat">Jumat</option>
-                                        <option value="Sabtu">Sabtu</option>
-                                    </select>
-                                    <InputError message={errors.hari} />
-                                    
-                                    <Label htmlFor="jam">Jam</Label>
-                                    <Input id="jam" type='time' tabIndex={4}
-                                        placeholder="Contoh: 08:00" value={data.jam}
-                                        onChange={(e) => setData('jam', e.target.value)}
-                                        required
-                                    />
-                                    <InputError message={errors.jam} />
-                                    
-                                    <Label htmlFor="ruangan">Ruangan</Label>
-                                    <Input id="ruangan" type='text' tabIndex={5}
-                                        placeholder="Contoh: Ruang A101" value={data.ruangan}
-                                        onChange={(e) => setData('ruangan', e.target.value)}
-                                        required
-                                    />
-                                    <InputError message={errors.ruangan} />
+                                <div className="grid gap-4 py-2">
+                                    <div className="flex flex-col gap-1">
+                                        <Label htmlFor="nama_matkul">Nama Mata Kuliah</Label>
+                                        <Input
+                                            id="nama_matkul"
+                                            type="text"
+                                            placeholder="Contoh: Pemrograman Web"
+                                            value={data.nama_matkul}
+                                            onChange={(e) => setData('nama_matkul', e.target.value)}
+                                            required
+                                        />
+                                        <InputError message={errors.nama_matkul} />
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <Label htmlFor="nama_dosen">Dosen</Label>
+                                        <Input
+                                            id="nama_dosen"
+                                            type="text"
+                                            placeholder="Contoh: Dr. John Doe"
+                                            value={data.nama_dosen}
+                                            onChange={(e) => setData('nama_dosen', e.target.value)}
+                                            required
+                                        />
+                                        <InputError message={errors.nama_dosen} />
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <Label htmlFor="hari">Hari</Label>
+                                        <select
+                                            id="hari"
+                                            className="rounded-md border px-3 py-2 text-sm shadow-sm focus:border-[#1E63B0] focus:ring-1 focus:ring-[#1E63B0] focus:outline-none"
+                                            value={data.hari}
+                                            onChange={(e) => setData('hari', e.target.value)}
+                                            required
+                                        >
+                                            <option value="">-- Pilih hari --</option>
+                                            <option value="Senin">Senin</option>
+                                            <option value="Selasa">Selasa</option>
+                                            <option value="Rabu">Rabu</option>
+                                            <option value="Kamis">Kamis</option>
+                                            <option value="Jumat">Jumat</option>
+                                            <option value="Sabtu">Sabtu</option>
+                                        </select>
+                                        <InputError message={errors.hari} />
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <Label htmlFor="jam">Jam</Label>
+                                        <Input id="jam" type="time" value={data.jam} onChange={(e) => setData('jam', e.target.value)} required />
+                                        <InputError message={errors.jam} />
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <Label htmlFor="ruangan">Ruangan</Label>
+                                        <Input
+                                            id="ruangan"
+                                            type="text"
+                                            placeholder="Contoh: Ruang A101"
+                                            value={data.ruangan}
+                                            onChange={(e) => setData('ruangan', e.target.value)}
+                                            required
+                                        />
+                                        <InputError message={errors.ruangan} />
+                                    </div>
                                 </div>
-                                <DialogFooter>
-                                    <Button 
-                                        variant="secondary" 
+                                <DialogFooter className="mt-4 flex justify-end gap-2">
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        className="cursor-pointer text-gray-800 hover:bg-gray-300"
                                         onClick={() => {
                                             setIsDialogOpen(false);
                                             reset();
                                             setEditingMatkul(null);
-                                            setCalendarActive(false)
-                                        }}>
+                                        }}
+                                    >
                                         Batal
                                     </Button>
-                                    <Button disabled={processing} type="submit">
+                                    <Button type="submit" disabled={processing} className="cursor-pointer bg-[#1E63B0] text-white hover:bg-[#174a7a]">
                                         {editingMatkul ? 'Ubah' : 'Simpan'}
                                     </Button>
                                 </DialogFooter>
@@ -225,65 +302,56 @@ export default function Index() {
                     </Dialog>
                 </div>
 
-                <div className="mb-6">
-                {!isSignedIn ? (
-                    <GoogleOAuthProvider clientId={clientId}>
-                    <GoogleLoginButton setIsSignedIn={setIsSignedIn} />
-                    </GoogleOAuthProvider>
-                ) : (
-                    <div className="flex items-center gap-2">
-                        <label htmlFor="calendarToggle" className="text-sm text-gray-700 font-medium">Aktifkan Google Calendar</label>
-                        <Switch id="calendarToggle" checked={calendarActive} onCheckedChange={handleCalendarToggle} />
-                        <Button variant="destructive" onClick={handleGoogleLogout}>
-                        Logout Google
-                        </Button>
-                    </div>
-                )}
-                </div>
-                
-                <table className="table-auto w-full border">
-                    <thead>
+                <table className="w-full table-auto border">
+                    <thead className="bg-[#1E63B0] text-white">
                         <tr>
-                            <th className="p-2 border">No.</th>
-                            <th className="p-2 border">Nama Mata Kuliah</th>
-                            <th className="p-2 border">Dosen</th>
-                            <th className="p-2 border">Hari</th>
-                            <th className="p-2 border">Jam</th>
-                            <th className="p-2 border">Ruangan</th>
-                            <th className='p-2 border'>Action</th>
+                            <th className="border border-gray-400 p-2">No.</th>
+                            <th className="border border-gray-400 p-2">Nama Mata Kuliah</th>
+                            <th className="border border-gray-400 p-2">Dosen</th>
+                            <th className="border border-gray-400 p-2">Hari</th>
+                            <th className="border border-gray-400 p-2">Jam</th>
+                            <th className="border border-gray-400 p-2">Ruangan</th>
+                            <th className="border border-gray-400 p-2">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {mata_kuliahs.length === 0 && (
-                            <tr>
-                                <td colSpan={6} className="text-center p-4 border">Belum ada jadwal.</td>
-                            </tr>
-                        )}
-
-                        {mata_kuliahs.map((mata_kuliah, idx) => (
-                            <tr key={mata_kuliah.id}>
-                                <td className="p-2 border text-center">{idx + 1}</td>
-                                <td className="p-2 border">{mata_kuliah.nama_matkul}</td>
-                                <td className="p-2 border">{mata_kuliah.nama_dosen}</td>
-                                <td className="p-2 border">{mata_kuliah.hari}</td>
-                                <td className="p-2 border">{mata_kuliah.jam.slice(0, 5)}</td>
-                                <td className="p-2 border">{mata_kuliah.ruangan}</td>
-                                <td className='p-2 border'>
-                                    <Button 
-                                        variant="outline" size="sm" className="mr-2" 
-                                        onClick={() => handleEdit(mata_kuliah)}
-                                    >
-                                        Edit
-                                    </Button>
-                                    <Button
-                                        disabled={processing} 
-                                        onClick={() => handleDelete(mata_kuliah.id, mata_kuliah.nama_matkul)} variant="destructive" size="sm"
-                                    >
-                                        Hapus
-                                    </Button>
+                        {mata_kuliahs.length === 0 ? (
+                            <tr className="hover:bg-blue-50">
+                                <td colSpan={7} className="border p-4 text-center">
+                                    Belum ada jadwal.
                                 </td>
                             </tr>
-                        ))}
+                        ) : (
+                            mata_kuliahs.map((mata_kuliah, idx) => (
+                                <tr key={mata_kuliah.id}>
+                                    <td className="border p-2 text-center">{idx + 1}</td>
+                                    <td className="border p-2">{mata_kuliah.nama_matkul}</td>
+                                    <td className="border p-2">{mata_kuliah.nama_dosen}</td>
+                                    <td className="border p-2">{mata_kuliah.hari}</td>
+                                    <td className="border p-2">{mata_kuliah.jam.slice(0, 5)}</td>
+                                    <td className="border p-2">{mata_kuliah.ruangan}</td>
+                                    <td className="border p-2 text-center">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="mr-2 cursor-pointer bg-transparent hover:bg-transparent"
+                                            onClick={() => handleEdit(mata_kuliah)}
+                                        >
+                                            <Edit className="h-5 w-5 text-yellow-600" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="cursor-pointer bg-transparent hover:bg-transparent"
+                                            onClick={() => handleDelete(mata_kuliah.id, mata_kuliah.nama_matkul)}
+                                            disabled={processing}
+                                        >
+                                            <Trash2 className="h-5 w-5 text-red-600" />
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>

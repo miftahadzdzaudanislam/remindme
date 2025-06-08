@@ -5,9 +5,14 @@ use App\Http\Controllers\MahasiswaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Rute untuk landing page Anda
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    return view('landing');
 })->name('home');
+
+// Route::get('/', function () {
+//     return Inertia::render('welcome');
+// })->name('home');
 Route::get('/test-calendar', function () {
     return view('index');
 })->name('test.calendar');
