@@ -1,9 +1,4 @@
-// Import tambahan
-import Swal from 'sweetalert2';
-
-// ... import lainnya tetap
-import GoogleLoginButton from '@/components/GoogleLoginButton';
-import InputError from '@/components/input-error';
+import { PageProps, router } from '@inertiajs/core';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -33,8 +28,15 @@ interface MataKuliah {
     ruangan: string;
 }
 
+interface MataKuliahPagination {
+    data: MataKuliah[];
+    current_page: number;
+    last_page: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
 interface IndexProps extends PageProps {
-    mata_kuliahs: MataKuliah[];
+    mata_kuliahs: MataKuliahPagination;
 }
 
 export default function Index() {
@@ -44,6 +46,7 @@ export default function Index() {
     const [isSignedIn, setIsSignedIn] = useState(false);
     const [calendarActive, setCalendarActive] = useState(false);
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    const dataMataKuliah = mata_kuliahs.data ?? [];
 
     const {
         data,
@@ -315,45 +318,53 @@ export default function Index() {
                         </tr>
                     </thead>
                     <tbody>
-                        {mata_kuliahs.length === 0 ? (
-                            <tr className="hover:bg-blue-50">
-                                <td colSpan={7} className="border p-4 text-center">
-                                    Belum ada jadwal.
+                        {dataMataKuliah.length === 0 && (
+                            <tr>
+                                <td colSpan={6} className="text-center p-4 border">Belum ada jadwal.</td>
+                            </tr>
+                        )}
+
+                        {dataMataKuliah.map((mata_kuliah, idx) => (
+                            <tr key={mata_kuliah.id}>
+                                <td className="p-2 border text-center">{idx + 1 + ((mata_kuliahs.current_page - 1) * 10)}</td>
+                                <td className="p-2 border">{mata_kuliah.nama_matkul}</td>
+                                <td className="p-2 border">{mata_kuliah.nama_dosen}</td>
+                                <td className="p-2 border">{mata_kuliah.hari}</td>
+                                <td className="p-2 border">{mata_kuliah.jam.slice(0, 5)}</td>
+                                <td className="p-2 border">{mata_kuliah.ruangan}</td>
+                                <td className='p-2 border'>
+                                    <Button 
+                                        variant="outline" size="sm" className="mr-2" 
+                                        onClick={() => handleEdit(mata_kuliah)}
+                                    >
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        disabled={processing} 
+                                        onClick={() => handleDelete(mata_kuliah.id, mata_kuliah.nama_matkul)} variant="destructive" size="sm"
+                                    >
+                                        Hapus
+                                    </Button>
                                 </td>
                             </tr>
-                        ) : (
-                            mata_kuliahs.map((mata_kuliah, idx) => (
-                                <tr key={mata_kuliah.id}>
-                                    <td className="border p-2 text-center">{idx + 1}</td>
-                                    <td className="border p-2">{mata_kuliah.nama_matkul}</td>
-                                    <td className="border p-2">{mata_kuliah.nama_dosen}</td>
-                                    <td className="border p-2">{mata_kuliah.hari}</td>
-                                    <td className="border p-2">{mata_kuliah.jam.slice(0, 5)}</td>
-                                    <td className="border p-2">{mata_kuliah.ruangan}</td>
-                                    <td className="border p-2 text-center">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="mr-2 cursor-pointer bg-transparent hover:bg-transparent"
-                                            onClick={() => handleEdit(mata_kuliah)}
-                                        >
-                                            <Edit className="h-5 w-5 text-yellow-600" />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="cursor-pointer bg-transparent hover:bg-transparent"
-                                            onClick={() => handleDelete(mata_kuliah.id, mata_kuliah.nama_matkul)}
-                                            disabled={processing}
-                                        >
-                                            <Trash2 className="h-5 w-5 text-red-600" />
-                                        </Button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
+                        ))}
                     </tbody>
                 </table>
+
+                {/* Pagination */}
+                <div className="mt-4 flex flex-wrap gap-2">
+                {mata_kuliahs.links.map((link, idx) => (
+                    <Button
+                        key={idx}
+                        disabled={!link.url}
+                        onClick={() => link.url && router.visit(link.url)}
+                        variant={link.active ? 'default' : 'outline'}
+                        size="sm"
+                        dangerouslySetInnerHTML={{ __html: link.label }}
+                    />
+                ))}
+            </div>
+                
             </div>
         </AppLayout>
     );

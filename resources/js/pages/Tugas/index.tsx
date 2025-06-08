@@ -29,8 +29,15 @@ interface MataKuliah {
     nama_matkul: string;
 }
 
+interface TugasPagination {
+    data: Tugas[];
+    current_page: number;
+    last_page: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
 interface IndexProps extends PageProps {
-    tugas: Tugas[];
+    tugas: TugasPagination;
     mata_kuliahs: MataKuliah[];
 }
 
@@ -40,6 +47,7 @@ export default function Index() {
     const [tab, setTab] = useState<'progress' | 'completed'>('progress');
 
     const { mata_kuliahs, tugas } = usePage<IndexProps>().props;
+    const dataTugas = tugas.data ?? [];
 
     const {
         data,
@@ -321,6 +329,86 @@ export default function Index() {
                 </div>
 
                 {tab === 'progress' ? renderTabel(tugasBelumSelesai, false) : renderTabel(tugasSelesai, true)}
+                <table className="table-auto w-full border">
+                    <thead>
+                        <tr>
+                            <th className="p-2 border">No.</th>
+                            <th className="p-2 border">Judul</th>
+                            <th className="p-2 border">Deskripsi</th>
+                            <th className="p-2 border">Deadline</th>
+                            <th className="p-2 border">Prioritas</th>
+                            <th className="p-2 border">Mata Kuliah</th>
+                            <th className="p-2 border">Aksi</th>
+                            <th className='p-2 border'>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {dataTugas.length === 0 && (
+                            <tr>
+                                <td colSpan={6} className="text-center p-4 border">
+                                    Belum ada tugas.
+                                </td>
+                            </tr>
+                        )}
+                        {dataTugas.map((tgs, idx) => (
+                            <tr key={tgs.id}>
+                                <td className="p-2 border">{idx + 1 + (tugas.current_page - 1) * 10}</td>
+                                <td className="p-2 border">{tgs.judul}</td>
+                                <td className="p-2 border">{tgs.deskripsi}</td>
+                                <td className="p-2 border">
+                                    {new Date(tgs.deadline).toLocaleDateString('id-ID', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric',
+                                    })}
+                                </td>
+                                <td className="p-2 border">{tgs.prioritas}</td>
+                                <td className="p-2 border">
+                                    {mata_kuliahs.find(mk => mk.id === tgs.mata_kuliah_id)?.nama_matkul ?? tgs.mata_kuliah_id}
+                                </td>
+                                <td className="p-2 border">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleEdit(tgs)}
+                                        className="mr-2"
+                                    >
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={() => handleDelete(tgs.id, tgs.judul)}
+                                    >
+                                        Hapus
+                                    </Button>
+                                </td>
+                                <td className="p-2 border text-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={tgs.is_done}
+                                        onChange={() => router.patch(route('tugas.toggle', tgs.id))}
+                                    />
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+
+                {/* Pagination */}
+                <div className="mt-4 flex flex-wrap gap-2">
+                    {tugas.links.map((link, idx) => (
+                        <Button
+                            key={idx}
+                            disabled={!link.url}
+                            onClick={() => link.url && router.visit(link.url)}
+                            variant={link.active ? 'default' : 'outline'}
+                            size="sm"
+                            dangerouslySetInnerHTML={{ __html: link.label }}
+                        />
+                    ))}
+                </div>
+
             </div>
         </AppLayout>
     );

@@ -1,24 +1,12 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MahasiswaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-// Rute untuk landing page Anda
-Route::get('/', function () {
-    return view('landing');
-})->name('home');
-
-// Route::get('/', function () {
-//     return Inertia::render('welcome');
-// })->name('home');
-Route::get('/test-calendar', function () {
-    return view('index');
-})->name('test.calendar');
-Route::get('/calendar', function() {
-    return Inertia::render('TesCalendar');
-});
+Route::get('/', [HomeController::class, 'home'])->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['admin'])->prefix('admin')->group(function () {

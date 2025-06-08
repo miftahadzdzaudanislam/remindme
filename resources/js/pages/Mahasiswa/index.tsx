@@ -1,3 +1,4 @@
+import { PageProps, router } from '@inertiajs/core';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -43,14 +44,22 @@ interface Mahasiswa {
     created_at: string;
 }
 
+interface MahasiswaPagination {
+    data: Mahasiswa[];
+    current_page: number;
+    last_page: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
 interface IndexProps extends PageProps {
-    mahasiswa: Mahasiswa[];
+    mahasiswa: MahasiswaPagination;
 }
 
 export default function Index() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<Mahasiswa | null>(null);
     const { mahasiswa } = usePage<IndexProps>().props;
+    const dataMahasiswa = mahasiswa.data ?? [];
 
     const {
         data,
@@ -359,6 +368,10 @@ export default function Index() {
                         </tr>
                     </thead>
                     <tbody>
+                        {dataMahasiswa.length === 0 && (
+                            <tr>
+                                <td colSpan={7} className="text-center p-4 border">
+                                    Belum ada Mahasiswa.
                         {mahasiswa.length > 0 ? (
                             mahasiswa.map((user) => (
                                 <tr key={user.id} className="odd:bg-white even:bg-gray-100">
@@ -402,8 +415,62 @@ export default function Index() {
                                 </td>
                             </tr>
                         )}
+                        {dataMahasiswa.map((mhs, idx) => (
+                            <tr key={mhs.id}>
+                                <td className="p-2 border">{idx + 1 + (mahasiswa.current_page - 1) * 10}</td>
+                                <td className="p-2 border">{mhs.name}</td>
+                                <td className="p-2 border">{mhs.email}</td>
+                                <td className="p-2 border">{mhs.jurusan}</td>
+                                <td className="p-2 border">{mhs.status}</td>
+                                <td className="p-2 border">
+                                    {mhs.last_login_at
+                                    ? dayjs(mhs.last_login_at).isToday()
+                                        ? `Today, ${dayjs(mhs.last_login_at).format('HH:mm')}`
+                                        : dayjs(mhs.last_login_at).isYesterday()
+                                        ? `Yesterday, ${dayjs(mhs.last_login_at).format('HH:mm')}`
+                                        : dayjs(mhs.last_login_at).format('MMM D, YYYY HH:mm')
+                                    : '-'}
+
+                                </td>
+                                <td className="p-2 border">
+                                    {dayjs(mhs.created_at).format('D MMM YYYY')}
+                                </td>
+                                <td className="p-2 border">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleEdit(mhs)}
+                                        className="mr-2"
+                                    >
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={() => handleDelete(mhs.id, mhs.name)}
+                                    >
+                                        Hapus
+                                    </Button>
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
+
+                {/* Pagination */}
+                <div className="mt-4 flex flex-wrap gap-2">
+                {mahasiswa.links.map((link, idx) => (
+                    <Button
+                        key={idx}
+                        disabled={!link.url}
+                        onClick={() => link.url && router.visit(link.url)}
+                        variant={link.active ? 'default' : 'outline'}
+                        size="sm"
+                        dangerouslySetInnerHTML={{ __html: link.label }}
+                    />
+                ))}
+            </div>
+
             </div>
         </AppLayout>
     );

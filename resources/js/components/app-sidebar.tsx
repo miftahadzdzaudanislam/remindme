@@ -75,7 +75,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={role === 'admin' ? '/dashboard-admin' : role === 'mahasiswa' ? '/dashboard-mahasiswa' : '/'} prefetch>
+                            <Link href={role === 'admin' ? '/admin/dashboard-admin' : role === 'mahasiswa' ? '/mahasiswa/dashboard-mahasiswa' : '/'} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
