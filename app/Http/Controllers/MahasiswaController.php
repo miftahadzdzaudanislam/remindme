@@ -46,7 +46,7 @@ class MahasiswaController extends Controller
     public function indexMatkul()
     {
         $user = Auth::user();
-        $mata_kuliahs = MataKuliah::where('user_id',$user->id)->get();
+        $mata_kuliahs = MataKuliah::where('user_id',$user->id)->paginate(10);
 
         return Inertia::render('Matkul/index', compact('mata_kuliahs'));
     }
@@ -171,7 +171,8 @@ class MahasiswaController extends Controller
         $user = Auth::user();
         $tugas = Tugas::where('user_id', $user->id)
             ->with('mata_kuliah')
-            ->get();
+            ->orderBy('deadline', 'asc')
+            ->paginate(10);
             
         $mata_kuliahs = MataKuliah::where('user_id', $user->id)
             ->select('id', 'nama_matkul')

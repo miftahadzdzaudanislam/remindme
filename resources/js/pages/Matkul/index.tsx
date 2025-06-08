@@ -1,4 +1,4 @@
-import { PageProps } from '@inertiajs/core';
+import { PageProps, router } from '@inertiajs/core';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -28,8 +28,15 @@ interface MataKuliah {
     ruangan: string;
 }
 
+interface MataKuliahPagination {
+    data: MataKuliah[];
+    current_page: number;
+    last_page: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
 interface IndexProps extends PageProps {
-    mata_kuliahs: MataKuliah[];
+    mata_kuliahs: MataKuliahPagination;
 }
 
 export default function Index() {
@@ -39,6 +46,7 @@ export default function Index() {
     const [isSignedIn, setIsSignedIn] = useState(false);
     const [calendarActive, setCalendarActive] = useState(false);
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    const dataMataKuliah = mata_kuliahs.data ?? [];
 
     const {data, setData, post, put, processing, reset, errors, delete: destroy} = useForm<{
         nama_matkul: string;
@@ -254,15 +262,15 @@ export default function Index() {
                         </tr>
                     </thead>
                     <tbody>
-                        {mata_kuliahs.length === 0 && (
+                        {dataMataKuliah.length === 0 && (
                             <tr>
                                 <td colSpan={6} className="text-center p-4 border">Belum ada jadwal.</td>
                             </tr>
                         )}
 
-                        {mata_kuliahs.map((mata_kuliah, idx) => (
+                        {dataMataKuliah.map((mata_kuliah, idx) => (
                             <tr key={mata_kuliah.id}>
-                                <td className="p-2 border text-center">{idx + 1}</td>
+                                <td className="p-2 border text-center">{idx + 1 + ((mata_kuliahs.current_page - 1) * 10)}</td>
                                 <td className="p-2 border">{mata_kuliah.nama_matkul}</td>
                                 <td className="p-2 border">{mata_kuliah.nama_dosen}</td>
                                 <td className="p-2 border">{mata_kuliah.hari}</td>
@@ -286,6 +294,21 @@ export default function Index() {
                         ))}
                     </tbody>
                 </table>
+
+                {/* Pagination */}
+                <div className="mt-4 flex flex-wrap gap-2">
+                {mata_kuliahs.links.map((link, idx) => (
+                    <Button
+                        key={idx}
+                        disabled={!link.url}
+                        onClick={() => link.url && router.visit(link.url)}
+                        variant={link.active ? 'default' : 'outline'}
+                        size="sm"
+                        dangerouslySetInnerHTML={{ __html: link.label }}
+                    />
+                ))}
+            </div>
+                
             </div>
         </AppLayout>
     );

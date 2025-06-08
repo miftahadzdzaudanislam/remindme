@@ -33,7 +33,7 @@ class AdminController extends Controller
     // Display the user management page
     public function indexUsers()
     {
-        $mahasiswa = User::where('role', 'mahasiswa')->get();
+        $mahasiswa = User::where('role', 'mahasiswa')->paginate(10);
 
         return Inertia::render('Mahasiswa/index', compact('mahasiswa'));
     }

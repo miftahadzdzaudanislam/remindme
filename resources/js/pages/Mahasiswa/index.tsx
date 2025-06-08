@@ -1,4 +1,4 @@
-import { PageProps } from '@inertiajs/core';
+import { PageProps, router } from '@inertiajs/core';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/react';
@@ -39,14 +39,22 @@ interface Mahasiswa {
     created_at: string;
 }
 
+interface MahasiswaPagination {
+    data: Mahasiswa[];
+    current_page: number;
+    last_page: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
 interface IndexProps extends PageProps {
-    mahasiswa: Mahasiswa[];
+    mahasiswa: MahasiswaPagination;
 }
 
 export default function Index() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<Mahasiswa | null>(null);
     const { mahasiswa } = usePage<IndexProps>().props;
+    const dataMahasiswa = mahasiswa.data ?? [];
 
     const {data, setData, post, put, processing, reset, errors, delete: destroy} = useForm({
         name: '',
@@ -291,16 +299,16 @@ export default function Index() {
                         </tr>
                     </thead>
                     <tbody>
-                        {mahasiswa.length === 0 && (
+                        {dataMahasiswa.length === 0 && (
                             <tr>
                                 <td colSpan={7} className="text-center p-4 border">
                                     Belum ada Mahasiswa.
                                 </td>
                             </tr>
                         )}
-                        {mahasiswa.map((mhs, idx) => (
+                        {dataMahasiswa.map((mhs, idx) => (
                             <tr key={mhs.id}>
-                                <td className="p-2 border">{idx + 1}</td>
+                                <td className="p-2 border">{idx + 1 + (mahasiswa.current_page - 1) * 10}</td>
                                 <td className="p-2 border">{mhs.name}</td>
                                 <td className="p-2 border">{mhs.email}</td>
                                 <td className="p-2 border">{mhs.jurusan}</td>
@@ -339,6 +347,21 @@ export default function Index() {
                         ))}
                     </tbody>
                 </table>
+
+                {/* Pagination */}
+                <div className="mt-4 flex flex-wrap gap-2">
+                {mahasiswa.links.map((link, idx) => (
+                    <Button
+                        key={idx}
+                        disabled={!link.url}
+                        onClick={() => link.url && router.visit(link.url)}
+                        variant={link.active ? 'default' : 'outline'}
+                        size="sm"
+                        dangerouslySetInnerHTML={{ __html: link.label }}
+                    />
+                ))}
+            </div>
+
             </div>
         </AppLayout>
     );

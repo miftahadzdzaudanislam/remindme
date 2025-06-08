@@ -33,8 +33,15 @@ interface MataKuliah {
     nama_matkul: string;
 }
 
+interface TugasPagination {
+    data: Tugas[];
+    current_page: number;
+    last_page: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
 interface IndexProps extends PageProps {
-    tugas: Tugas[];
+    tugas: TugasPagination;
     mata_kuliahs: MataKuliah[];
 }
 
@@ -42,6 +49,7 @@ export default function Index() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingTugas, setEditingTugas] = useState<Tugas | null>(null);
     const { mata_kuliahs, tugas } = usePage<IndexProps>().props;
+    const dataTugas = tugas.data ?? [];
 
     const { data, setData, post, put, processing, reset, errors, delete: destroy } = useForm({
         mata_kuliah_id: 0,
@@ -221,16 +229,16 @@ export default function Index() {
                         </tr>
                     </thead>
                     <tbody>
-                        {tugas.length === 0 && (
+                        {dataTugas.length === 0 && (
                             <tr>
                                 <td colSpan={6} className="text-center p-4 border">
                                     Belum ada tugas.
                                 </td>
                             </tr>
                         )}
-                        {tugas.map((tgs, idx) => (
+                        {dataTugas.map((tgs, idx) => (
                             <tr key={tgs.id}>
-                                <td className="p-2 border">{idx + 1}</td>
+                                <td className="p-2 border">{idx + 1 + (tugas.current_page - 1) * 10}</td>
                                 <td className="p-2 border">{tgs.judul}</td>
                                 <td className="p-2 border">{tgs.deskripsi}</td>
                                 <td className="p-2 border">
@@ -272,6 +280,21 @@ export default function Index() {
                         ))}
                     </tbody>
                 </table>
+
+                {/* Pagination */}
+                <div className="mt-4 flex flex-wrap gap-2">
+                    {tugas.links.map((link, idx) => (
+                        <Button
+                            key={idx}
+                            disabled={!link.url}
+                            onClick={() => link.url && router.visit(link.url)}
+                            variant={link.active ? 'default' : 'outline'}
+                            size="sm"
+                            dangerouslySetInnerHTML={{ __html: link.label }}
+                        />
+                    ))}
+                </div>
+
             </div>
         </AppLayout>
     );
