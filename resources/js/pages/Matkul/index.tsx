@@ -1,4 +1,5 @@
-import { PageProps, router } from '@inertiajs/core';
+import GoogleLoginButton from '@/components/GoogleLoginButton';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -6,11 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { PageProps } from '@inertiajs/core';
+import { PageProps, router } from '@inertiajs/core';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Edit, LogOut, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import Swal from 'sweetalert2';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -48,6 +50,20 @@ export default function Index() {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const dataMataKuliah = mata_kuliahs.data ?? [];
 
+    // Tab Hari
+    const urutanHari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    const [selectedHari, setSelectedHari] = useState(urutanHari[0]);
+
+    interface FormData {
+        nama_matkul: string;
+        nama_dosen: string;
+        hari: string;
+        jam: string;
+        ruangan: string;
+        sync_to_google: boolean;
+        [key: string]: string | boolean;
+    }
+
     const {
         data,
         setData,
@@ -57,7 +73,7 @@ export default function Index() {
         reset,
         errors,
         delete: destroy,
-    } = useForm({
+    } = useForm<FormData>({
         nama_matkul: '',
         nama_dosen: '',
         hari: '',
@@ -91,7 +107,7 @@ export default function Index() {
             confirmButtonText: 'Ya, logout',
             cancelButtonText: 'Batal',
             confirmButtonColor: '#1E63B0',
-            cancelButtonColor: '#d33'
+            cancelButtonColor: '#d33',
         }).then((result) => {
             if (result.isConfirmed) {
                 setIsSignedIn(false);
@@ -151,7 +167,7 @@ export default function Index() {
             confirmButtonText: 'Ya, hapus',
             cancelButtonText: 'Batal',
             confirmButtonColor: '#1E63B0',
-            cancelButtonColor: '#d33'
+            cancelButtonColor: '#d33',
         }).then((result) => {
             if (result.isConfirmed) {
                 destroy(route('matkul.destroy', id), {
@@ -162,6 +178,12 @@ export default function Index() {
             }
         });
     };
+
+    // Kelompokkan data berdasarkan hari
+    const matkulPerHari: { [key: string]: MataKuliah[] } = {};
+    urutanHari.forEach((hari) => {
+        matkulPerHari[hari] = dataMataKuliah.filter((mk) => mk.hari === hari);
+    });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -256,12 +278,11 @@ export default function Index() {
                                             required
                                         >
                                             <option value="">-- Pilih hari --</option>
-                                            <option value="Senin">Senin</option>
-                                            <option value="Selasa">Selasa</option>
-                                            <option value="Rabu">Rabu</option>
-                                            <option value="Kamis">Kamis</option>
-                                            <option value="Jumat">Jumat</option>
-                                            <option value="Sabtu">Sabtu</option>
+                                            {urutanHari.map((hari) => (
+                                                <option key={hari} value={hari}>
+                                                    {hari}
+                                                </option>
+                                            ))}
                                         </select>
                                         <InputError message={errors.hari} />
                                     </div>
@@ -305,66 +326,79 @@ export default function Index() {
                     </Dialog>
                 </div>
 
-                <table className="w-full table-auto border">
-                    <thead className="bg-[#1E63B0] text-white">
-                        <tr>
-                            <th className="border border-gray-400 p-2">No.</th>
-                            <th className="border border-gray-400 p-2">Nama Mata Kuliah</th>
-                            <th className="border border-gray-400 p-2">Dosen</th>
-                            <th className="border border-gray-400 p-2">Hari</th>
-                            <th className="border border-gray-400 p-2">Jam</th>
-                            <th className="border border-gray-400 p-2">Ruangan</th>
-                            <th className="border border-gray-400 p-2">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {dataMataKuliah.length === 0 && (
-                            <tr>
-                                <td colSpan={6} className="text-center p-4 border">Belum ada jadwal.</td>
-                            </tr>
-                        )}
+                {/* Tab Hari */}
+                <div className="mb-4 flex flex-wrap justify-center rounded-lg bg-gray-200 p-1">
+                    {urutanHari.map((hari) => (
+                        <button
+                            key={hari}
+                            onClick={() => setSelectedHari(hari)}
+                            className={`min-w-[100px] flex-1 rounded-lg cursor-pointer p-2 font-medium transition ${
+                                selectedHari === hari ? 'bg-[#1E63B0] text-white' : 'bg-transparent text-gray-700 hover:bg-[#e3eefd]'
+                            }`}
+                            style={{ border: 'none' }}
+                        >
+                            {hari}
+                        </button>
+                    ))}
+                </div>
 
-                        {dataMataKuliah.map((mata_kuliah, idx) => (
-                            <tr key={mata_kuliah.id}>
-                                <td className="p-2 border text-center">{idx + 1 + ((mata_kuliahs.current_page - 1) * 10)}</td>
-                                <td className="p-2 border">{mata_kuliah.nama_matkul}</td>
-                                <td className="p-2 border">{mata_kuliah.nama_dosen}</td>
-                                <td className="p-2 border">{mata_kuliah.hari}</td>
-                                <td className="p-2 border">{mata_kuliah.jam.slice(0, 5)}</td>
-                                <td className="p-2 border">{mata_kuliah.ruangan}</td>
-                                <td className='p-2 border'>
-                                    <Button 
-                                        variant="outline" size="sm" className="mr-2" 
-                                        onClick={() => handleEdit(mata_kuliah)}
-                                    >
-                                        Edit
-                                    </Button>
-                                    <Button
-                                        disabled={processing} 
-                                        onClick={() => handleDelete(mata_kuliah.id, mata_kuliah.nama_matkul)} variant="destructive" size="sm"
-                                    >
-                                        Hapus
-                                    </Button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                {/* List untuk hari yang dipilih */}
+                <div>
+                    <h2 className="mb-2 text-lg font-semibold text-[#1E63B0]">{selectedHari}</h2>
+                    {matkulPerHari[selectedHari].length === 0 ? (
+                        <div className="rounded bg-gray-100 p-4 text-gray-500 italic">Tidak ada jadwal Perkuliahan.</div>
+                    ) : (
+                        <ul className="flex flex-col gap-3">
+                            {matkulPerHari[selectedHari].map((mata_kuliah) => (
+                                <li
+                                    key={mata_kuliah.id}
+                                    className="flex flex-col gap-1 rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between"
+                                >
+                                    <div>
+                                        <div className="font-bold text-indigo-800">{mata_kuliah.nama_matkul}</div>
+                                        <div className="text-sm text-gray-700">Dosen: {mata_kuliah.nama_dosen}</div>
+                                        <div className="text-sm text-gray-700">
+                                            Jam: {mata_kuliah.jam.slice(0, 5)} | Ruangan: {mata_kuliah.ruangan}
+                                        </div>
+                                    </div>
+                                    <div className="mt-2 flex gap-2 md:mt-0">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="cursor-pointer bg-transparent hover:bg-transparent"
+                                            onClick={() => handleEdit(mata_kuliah)}
+                                        >
+                                            <Edit className="h-5 w-5 text-yellow-600" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="cursor-pointer bg-transparent hover:bg-transparent"
+                                            onClick={() => handleDelete(mata_kuliah.id, mata_kuliah.nama_matkul)}
+                                            disabled={processing}
+                                        >
+                                            <Trash2 className="h-5 w-5 text-red-600" />
+                                        </Button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
 
                 {/* Pagination */}
                 <div className="mt-4 flex flex-wrap gap-2">
-                {mata_kuliahs.links.map((link, idx) => (
-                    <Button
-                        key={idx}
-                        disabled={!link.url}
-                        onClick={() => link.url && router.visit(link.url)}
-                        variant={link.active ? 'default' : 'outline'}
-                        size="sm"
-                        dangerouslySetInnerHTML={{ __html: link.label }}
-                    />
-                ))}
-            </div>
-                
+                    {mata_kuliahs.links.map((link, idx) => (
+                        <Button
+                            key={idx}
+                            disabled={!link.url}
+                            onClick={() => link.url && router.visit(link.url)}
+                            className={link.active ? 'bg-[#1E63B0] hover:bg-[#1E63B0]  text-white border-[#1E63B0]' : ''}
+                            size="sm"
+                            dangerouslySetInnerHTML={{ __html: link.label }}
+                        />
+                    ))}
+                </div>
             </div>
         </AppLayout>
     );

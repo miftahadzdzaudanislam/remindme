@@ -41,14 +41,14 @@ https://templatemo.com/tm-586-scholar
   <!-- ***** Preloader End ***** -->
 
   <!-- ***** Header Area Start ***** -->
-  <header class="header-area header-sticky">
+  <header class="header-area header-sticky bg-transparent">
     <div class="container">
         <div class="row">
             <div class="col-12">
                 <nav class="main-nav">
                     <!-- ***** Logo Start ***** -->
                     <a href="{{ url('/') }}" class="logo">
-                        <h1>RemindMe</h1>
+                        <img src="assets/images/logo-remindme.png" alt="">
                     </a>
                     <!-- ***** Logo End ***** -->
                     <!-- ***** Serach Start ***** -->
@@ -65,10 +65,22 @@ https://templatemo.com/tm-586-scholar
                       <li class="scroll-to-section"><a href="#task">Task</a></li>
                       <li class="scroll-to-section"><a href="#services">Services</a></li>
                       <li class="scroll-to-section"><a href="#team">Team</a></li>                      
-                      {{-- Tombol Login --}}
-                    <li><a href="{{ route('login') }}">Login</a></li>
-                    {{-- Tombol Register --}}
-                    <li><a href="{{ route('register') }}">Register</a></li>
+                      {{-- Jika belum login --}}
+                    @guest
+                      <li><a href="{{ route('login') }}">Login</a></li>
+                      <li><a href="{{ route('register') }}">Register</a></li>
+                    @endguest
+
+                    {{-- Jika sudah login --}}
+                    @if(Auth::check())
+                      @if(Auth::user()->role === 'mahasiswa')
+                          <li><a href="{{ route('mahasiswa.dashboard') }}">Dashboard Mahasiswa</a></li>
+                      @elseif(Auth::user()->role === 'admin')
+                          <li><a href="{{ route('admin.dashboard') }}">Dashboard Admin</a></li>
+                      @endif
+                    @endif
+
+
                   </ul>   
                     <a class='menu-trigger'>
                         <span>Menu</span>
@@ -142,111 +154,50 @@ https://templatemo.com/tm-586-scholar
 
     <div class="section events" id="task">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-12 text-center">
-          <div class="section-heading">
-            <h6>Schedule</h6>
-            <h2>Upcoming Task</h2>
-          </div>
-        </div>
-        <div class="col-lg-12 col-md-6">
-          <div class="item">
-            <div class="row">
-              <div class="col-lg-3">
-                <div class="image">
-                  <img src="{{ asset('assets/images/event-01.jpg ') }}" alt="">
-                </div>
-              </div>
-              <div class="col-lg-9">
-                <ul>
-                  <li>
-                    <span class="category">Mata Kuliah Wajib</span>
-                    <h4>Manajemen Proyek</h4>
-                  </li>
-                  <li>
-                    <span>Class Date:</span>
-                    <h6>10 Juni 2025</h6>
-                  </li>
-                  <li>
-                    <span>Open:</span>
-                    <h6>03 Juni 2025, 15:30</h6>
-                  </li>
-                  <li>
-                    <span>Close:</span>
-                    <h6>09 Juni 2025, 23:59</h6>
-                  </li>
-                </ul>
-                <a href="#"><i class="fa fa-angle-right"></i></a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-12 col-md-6">
-          <div class="item">
-            <div class="row">
-              <div class="col-lg-3">
-                <div class="image">
-                  <img src="{{ asset('assets/images/event-02.jpg') }}" alt="">
-                </div>
-              </div>
-              <div class="col-lg-9">
-                <ul>
-                  <li>
-                    <span class="category">Peminatan</span>
-                    <h4>Kriptografi</h4>
-                  </li>
-                  <li>
-                    <span>Class Date:</span>
-                    <h6>11 Juni 2025</h6>
-                  </li>
-                  <li>
-                    <span>Open:</span>
-                    <h6>04 Juni 2025, 20:30</h6>
-                  </li>
-                  <li>
-                    <span>Close:</span>
-                    <h6>10 Juni 2025, 23:59</h6>
-                  </li>
-                </ul>
-                <a href="#"><i class="fa fa-angle-right"></i></a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-12 col-md-6">
-          <div class="item">
-            <div class="row">
-              <div class="col-lg-3">
-                <div class="image">
-                  <img src="{{ asset('assets/images/event-03.jpg') }}" alt="">
-                </div>
-              </div>
-              <div class="col-lg-9">
-                <ul>
-                  <li>
-                    <span class="category">Mata Kuliah Wajib</span>
-                    <h4>Cloud Computing</h4>
-                  </li>
-                  <li>
-                    <span>Class Date:</span>
-                    <h6>13 Juni 2025</h6>
-                  </li>
-                  <li>
-                    <span>Open:</span>
-                    <h6>06 Juni 2025, 14:30</h6>
-                  </li>
-                  <li>
-                    <span>Close:</span>
-                    <h6>12 Juni 2025, 23:59</h6>
-                  </li>
-                </ul>
-                <a href="#"><i class="fa fa-angle-right"></i></a>
-              </div>
+  <div class="row">
+      @if(Auth::check() && Auth::user()->role === 'mahasiswa')
+      <div class="section-heading text-center">
+        <h6>Schedule</h6>
+        <h2 style="color: #3949AB">Upcoming Task</h2>
+      </div>
+      @endif
+
+    @if(Auth::check() && Auth::user()->role === 'mahasiswa')
+  <p class="text-xl text-center font-semibold mb-4">Selamat datang, <span style="color: #3949AB; font-weight: bold"> {{ Auth::user()->name }}! </span></p>
+
+  @if($tugas_terdekat->isEmpty())
+    <p class="text-center text-gray-600">Tidak ada tugas yang tersedia.</p>
+  @else
+    @foreach ($tugas_terdekat as $tugas)
+      <div class="col-lg-12 col-md-6 mb-4 mt-10">
+        <div class="item border rounded-lg p-4 shadow-sm">
+          <div class="row">
+            <div class="col-lg-12">
+              <ul>
+                <li>
+                  <span class="category text-sm font-medium text-blue-600">{{ ucfirst($tugas->prioritas) }}</span>
+                  <h4 class="text-xl font-bold">{{ $tugas->judul }}</h4>
+                </li>
+                <li class="mt-2">
+                  <span class="text-sm text-gray-500">Mata Kuliah:</span>
+                  <h6 class="text-base">{{ $tugas->mata_kuliah->nama_matkul ?? 'Tidak diketahui' }}</h6>
+                </li>
+                <li class="mt-2">
+                  <span class="text-sm text-gray-500">Deadline:</span>
+                  <h6 class="text-base text-red-600">{{ \Carbon\Carbon::parse($tugas->deadline)->translatedFormat('d F Y, H:i') }}</h6>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    @endforeach
+  @endif
+@endif
+
+  </div>
+</div>
+
   </div>
 
   <div class="services section" id="services">
@@ -258,7 +209,7 @@ https://templatemo.com/tm-586-scholar
               <img src="{{ asset('assets/images/service-01.png') }}" alt="online degrees">
             </div>
             <div class="main-content">
-              <h4>Manajemen <br> Tugas Otomatis</h4>
+              <h4 style="color: #3949AB">Manajemen <br> Tugas Otomatis</h4>
               <p>Tambahkan tugas dan tentukan deadline-nya</p>
             </div>
           </div>
@@ -269,7 +220,7 @@ https://templatemo.com/tm-586-scholar
               <img src="{{ asset('assets/images/service-02.png') }}" alt="short courses">
             </div>
             <div class="main-content">
-              <h4>Integrasi Jadwal Kuliah</h4>
+              <h4 style="color: #3949AB">Integrasi Jadwal Kuliah</h4>
               <p>Sinkronisasi dengan Google Calendar atau input manual</p>
             </div>
           </div>
@@ -280,8 +231,8 @@ https://templatemo.com/tm-586-scholar
               <img src="{{ asset('assets/images/service-03.png') }}" alt="web experts">
             </div>
             <div class="main-content">
-              <h4>Pengingat via WhatsApp</h4>
-              <p>Notifikasi langsung ke WhatsApp sebelum deadline</p>
+              <h4 style="color: #3949AB">Pengingat via WhatsApp</h4>
+              <p>Notifikasi langsung ke WhatsApp sebelum H-3 deadline & Hari H deadline</p>
             </div>
           </div>
         </div>
@@ -347,7 +298,7 @@ https://templatemo.com/tm-586-scholar
         <div class="col-lg-5 align-self-center">
           <div class="section-heading">
             <h6>About Us</h6>
-            <h2>Solusi Cerdas untuk Mahasiswa yang Sibuk</h2>
+            <h2 style="color: #3949AB">Solusi Cerdas untuk Mahasiswa yang Sibuk</h2>
             <p>Kami hadir untuk membantu mahasiswa mengelola tugas dan jadwal kuliah dengan lebih mudah. Dengan fitur pengingat otomatis dan integrasi WhatsApp, kamu nggak perlu takut lagi lupa deadline.
               Kami percaya, manajemen waktu yang baik adalah kunci kesuksesan akademik.</p>
             <div class="main-button">
@@ -507,7 +458,7 @@ https://templatemo.com/tm-586-scholar
   <div class="container">
     <div class="row">
       <div class="col-lg-12 text-center mb-5">
-        <h2 class="text-center mb-5">Our Team</h2>
+        <h2 class="text-center mb-5" style="color: #3949AB">Our Team in <span style="color: #1E63B0">RemindMe</span></h2>
       </div>
     </div>
 
@@ -515,8 +466,8 @@ https://templatemo.com/tm-586-scholar
       <div class="col-lg-3 col-md-6">
         <div class="team-member">
           <div class="main-content">
-            <img src="{{ asset('assets/images/member-01.jpg') }}" alt="Mufadhal">
-            <span class="category">Project Manager</span>
+            <img src="{{ asset('assets/images/member-03.jpg') }}" alt="Mufadhal">
+            <span  class="category">Project Manager</span>
             <h4>Mufadhal</h4>
           </div>
         </div>
@@ -545,7 +496,7 @@ https://templatemo.com/tm-586-scholar
       <div class="col-lg-3 col-md-6">
         <div class="team-member">
           <div class="main-content">
-            <img src="{{ asset('assets/images/member-04.jpg') }}" alt="Erik Setiawan">
+            <img src="{{ asset('assets/images/member-03.jpg') }}" alt="Erik Setiawan">
             <span class="category">Designer &amp; Developer</span>
             <h4>Erik Setiawan</h4>
           </div>
@@ -571,7 +522,7 @@ https://templatemo.com/tm-586-scholar
         <div class="col-lg-3 col-md-6">
           <div class="team-member">
             <div class="main-content">
-              <img src="{{ asset('assets/images/member-02.jpg') }}" alt="">
+              <img src="{{ asset('assets/images/member-03.jpg') }}" alt="">
               <span class="category">Media Kreatif</span>
               <h4>Egi Vrinaldi A. F</h4>
             </div>
@@ -580,7 +531,7 @@ https://templatemo.com/tm-586-scholar
         <div class="col-lg-3 col-md-6">
           <div class="team-member">
             <div class="main-content">
-              <img src="{{ asset('assets/images/member-03.jpg') }}" alt="">
+              <img src="{{ asset('assets/images/member-02.jpg') }}" alt="">
               <span class="category">Media Kreatif</span>
               <h4>Naila Fitriani H.</h4>              
             </div>

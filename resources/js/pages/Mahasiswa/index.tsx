@@ -1,4 +1,3 @@
-import { PageProps, router } from '@inertiajs/core';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { PageProps } from '@inertiajs/core';
+import { PageProps, router } from '@inertiajs/core';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { Dialog } from '@radix-ui/react-dialog';
 import { useState } from 'react';
@@ -55,11 +54,42 @@ interface IndexProps extends PageProps {
     mahasiswa: MahasiswaPagination;
 }
 
+// Badge status dengan warna
+function StatusBadge({ status }: { status: 'active' | 'inactive' | 'suspended' }) {
+    let color = '';
+    let label = '';
+    switch (status) {
+        case 'active':
+            color = 'bg-green-100 text-green-700';
+            label = 'Aktif';
+            break;
+        case 'inactive':
+            color = 'bg-orange-100 text-orange-700 rounded-full ';
+            label = 'Tidak Aktif';
+            break;
+        case 'suspended':
+            color = 'bg-red-100 text-red-700';
+            label = 'Suspended';
+            break;
+    }
+    return <span className={`inline-block rounded border px-2 py-1 text-xs font-semibold ${color}`}>{label}</span>;
+}
+
 export default function Index() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<Mahasiswa | null>(null);
+    const [tab, setTab] = useState<'all' | 'active' | 'inactive' | 'suspended'>('all');
     const { mahasiswa } = usePage<IndexProps>().props;
     const dataMahasiswa = mahasiswa.data ?? [];
+
+    // Hitung jumlah masing-masing status
+    const jumlahSemua = dataMahasiswa.length;
+    const jumlahAktif = dataMahasiswa.filter((m) => m.status === 'active').length;
+    const jumlahTidakAktif = dataMahasiswa.filter((m) => m.status === 'inactive').length;
+    const jumlahSuspended = dataMahasiswa.filter((m) => m.status === 'suspended').length;
+
+    // Filter data sesuai tab
+    const filteredMahasiswa = tab === 'all' ? dataMahasiswa : dataMahasiswa.filter((mhs) => mhs.status === tab);
 
     const {
         data,
@@ -91,6 +121,7 @@ export default function Index() {
                     reset();
                     setIsDialogOpen(false);
                     setEditingUser(null);
+                    router.reload(); // reload data agar tab & jumlah update
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil',
@@ -112,6 +143,7 @@ export default function Index() {
                 onSuccess: () => {
                     reset();
                     setIsDialogOpen(false);
+                    router.reload(); // reload data agar tab & jumlah update
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil',
@@ -160,6 +192,7 @@ export default function Index() {
             if (result.isConfirmed) {
                 destroy(route('users.destroy', id), {
                     onSuccess: () => {
+                        router.reload(); // reload data agar tab & jumlah update
                         Swal.fire({
                             icon: 'success',
                             title: 'Terhapus',
@@ -345,7 +378,7 @@ export default function Index() {
                                     >
                                         Batal
                                     </Button>
-                                    <Button type="submit" className="bg-[#1E63B0] text-white hover:bg-[#174a7a] cursor-pointer" disabled={processing}>
+                                    <Button type="submit" className="cursor-pointer bg-[#1E63B0] text-white hover:bg-[#174a7a]" disabled={processing}>
                                         {editingUser ? 'Simpan' : 'Tambah'}
                                     </Button>
                                 </DialogFooter>
@@ -354,9 +387,46 @@ export default function Index() {
                     </Dialog>
                 </div>
 
+                {/* Tab Filter dengan jumlah */}
+                <div className="mb-2 flex w-full rounded-lg bg-gray-200 p-1">
+                    <button
+                        onClick={() => setTab('all')}
+                        className={`flex-1 cursor-pointer rounded-lg px-4 py-2 font-medium transition ${
+                            tab === 'all' ? 'bg-[#1E63B0] text-white' : 'bg-gray-200 text-gray-700'
+                        }`}
+                    >
+                        Semua <span className="font-normal">({jumlahSemua})</span>
+                    </button>
+                    <button
+                        onClick={() => setTab('active')}
+                        className={`flex-1 cursor-pointer rounded-lg px-4 py-2 font-medium transition ${
+                            tab === 'active' ? 'bg-[#1E63B0] text-white' : 'bg-gray-200 text-gray-700'
+                        }`}
+                    >
+                        Aktif <span className="font-normal">({jumlahAktif})</span>
+                    </button>
+                    <button
+                        onClick={() => setTab('inactive')}
+                        className={`flex-1 cursor-pointer rounded-lg px-4 py-2 font-medium transition ${
+                            tab === 'inactive' ? 'bg-[#1E63B0] text-white' : 'bg-gray-200 text-gray-700'
+                        }`}
+                    >
+                        Tidak Aktif <span className="font-normal">({jumlahTidakAktif})</span>
+                    </button>
+                    <button
+                        onClick={() => setTab('suspended')}
+                        className={`flex-1 cursor-pointer rounded-lg px-4 py-2 font-medium transition ${
+                            tab === 'suspended' ? 'bg-[#1E63B0] text-white' : 'bg-gray-200 text-gray-700'
+                        }`}
+                    >
+                        Suspended <span className="font-normal">({jumlahSuspended})</span>
+                    </button>
+                </div>
+
                 <table className="w-full table-auto border-collapse border border-gray-300">
                     <thead className="bg-[#1E63B0] text-white">
                         <tr>
+                            <th className="border border-gray-300 p-2">No</th>
                             <th className="border border-gray-300 p-2">Nama</th>
                             <th className="border border-gray-300 p-2">Email</th>
                             <th className="border border-gray-300 p-2">NIM</th>
@@ -368,89 +438,48 @@ export default function Index() {
                         </tr>
                     </thead>
                     <tbody>
-                        {dataMahasiswa.length === 0 && (
+                        {filteredMahasiswa.length === 0 && (
                             <tr>
-                                <td colSpan={7} className="text-center p-4 border">
-                                    Belum ada Mahasiswa.
-                        {mahasiswa.length > 0 ? (
-                            mahasiswa.map((user) => (
-                                <tr key={user.id} className="odd:bg-white even:bg-gray-100">
-                                    <td className="border border-gray-300 p-2">{user.name}</td>
-                                    <td className="border border-gray-300 p-2">{user.email}</td>
-                                    <td className="border border-gray-300 p-2">{user.nim}</td>
-                                    <td className="border border-gray-300 p-2">{user.jurusan}</td>
-                                    <td className="border border-gray-300 p-2">{user.role}</td>
-                                    <td className="border border-gray-300 p-2">{user.status}</td>
-                                    <td className="border border-gray-300 p-2">
-                                        {user.last_login_at
-                                            ? dayjs(user.last_login_at).isToday()
-                                                ? `Hari ini, ${dayjs(user.last_login_at).format('HH:mm:ss')}`
-                                                : dayjs(user.last_login_at).isYesterday()
-                                                  ? `Kemarin, ${dayjs(user.last_login_at).format('HH:mm:ss')}`
-                                                  : dayjs(user.last_login_at).format('DD/MM/YYYY HH:mm:ss')
-                                            : '-'}
-                                    </td>
-                                    <td className="border border-gray-300 p-2 text-center">
-                                        <button
-                                            onClick={() => handleEdit(user)}
-                                            title="Edit"
-                                            className="mr-2 cursor-pointer text-yellow-600 hover:text-yellow-700"
-                                        >
-                                            <Edit size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(user.id, user.name)}
-                                            title="Hapus"
-                                            className="cursor-pointer text-red-600 hover:text-red-900"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan={8} className="border border-gray-300 px-2 py-1 text-center text-gray-500">
+                                <td colSpan={9} className="border border-gray-300 px-2 py-1 text-center text-gray-500">
                                     Tidak ada data mahasiswa.
                                 </td>
                             </tr>
                         )}
-                        {dataMahasiswa.map((mhs, idx) => (
-                            <tr key={mhs.id}>
-                                <td className="p-2 border">{idx + 1 + (mahasiswa.current_page - 1) * 10}</td>
-                                <td className="p-2 border">{mhs.name}</td>
-                                <td className="p-2 border">{mhs.email}</td>
-                                <td className="p-2 border">{mhs.jurusan}</td>
-                                <td className="p-2 border">{mhs.status}</td>
-                                <td className="p-2 border">
+                        {filteredMahasiswa.map((mhs, idx) => (
+                            <tr key={mhs.id} className="odd:bg-white even:bg-gray-100">
+                                <td className="border p-2">{idx + 1 + (mahasiswa.current_page - 1) * 10}</td>
+                                <td className="border border-gray-300 p-2">{mhs.name}</td>
+                                <td className="border border-gray-300 p-2">{mhs.email}</td>
+                                <td className="border border-gray-300 p-2">{mhs.nim}</td>
+                                <td className="border border-gray-300 p-2">{mhs.jurusan}</td>
+                                <td className="border border-gray-300 p-2">{mhs.role}</td>
+                                <td className="border border-gray-300 p-2">
+                                    <StatusBadge status={mhs.status} />
+                                </td>
+                                <td className="border border-gray-300 p-2">
                                     {mhs.last_login_at
-                                    ? dayjs(mhs.last_login_at).isToday()
-                                        ? `Today, ${dayjs(mhs.last_login_at).format('HH:mm')}`
-                                        : dayjs(mhs.last_login_at).isYesterday()
-                                        ? `Yesterday, ${dayjs(mhs.last_login_at).format('HH:mm')}`
-                                        : dayjs(mhs.last_login_at).format('MMM D, YYYY HH:mm')
-                                    : '-'}
-
+                                        ? dayjs(mhs.last_login_at).isToday()
+                                            ? `Hari ini, ${dayjs(mhs.last_login_at).format('HH:mm:ss')}`
+                                            : dayjs(mhs.last_login_at).isYesterday()
+                                              ? `Kemarin, ${dayjs(mhs.last_login_at).format('HH:mm:ss')}`
+                                              : dayjs(mhs.last_login_at).format('DD/MM/YYYY HH:mm:ss')
+                                        : '-'}
                                 </td>
-                                <td className="p-2 border">
-                                    {dayjs(mhs.created_at).format('D MMM YYYY')}
-                                </td>
-                                <td className="p-2 border">
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
+                                <td className="border border-gray-300 p-2 text-center">
+                                    <button
                                         onClick={() => handleEdit(mhs)}
-                                        className="mr-2"
+                                        title="Edit"
+                                        className="mr-2 cursor-pointer text-yellow-600 hover:text-yellow-700"
                                     >
-                                        Edit
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="destructive"
+                                        <Edit size={18} />
+                                    </button>
+                                    <button
                                         onClick={() => handleDelete(mhs.id, mhs.name)}
+                                        title="Hapus"
+                                        className="cursor-pointer text-red-600 hover:text-red-900"
                                     >
-                                        Hapus
-                                    </Button>
+                                        <Trash2 size={18} />
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -459,18 +488,17 @@ export default function Index() {
 
                 {/* Pagination */}
                 <div className="mt-4 flex flex-wrap gap-2">
-                {mahasiswa.links.map((link, idx) => (
-                    <Button
-                        key={idx}
-                        disabled={!link.url}
-                        onClick={() => link.url && router.visit(link.url)}
-                        variant={link.active ? 'default' : 'outline'}
-                        size="sm"
-                        dangerouslySetInnerHTML={{ __html: link.label }}
-                    />
-                ))}
-            </div>
-
+                    {mahasiswa.links.map((link, idx) => (
+                        <Button
+                            key={idx}
+                            disabled={!link.url}
+                            onClick={() => link.url && router.visit(link.url)}
+                            className={link.active ? 'bg-[#1E63B0] hover:bg-[#1E63B0]  text-white border-[#1E63B0]' : ''}
+                            size="sm"
+                            dangerouslySetInnerHTML={{ __html: link.label }}
+                        />
+                    ))}
+                </div>
             </div>
         </AppLayout>
     );

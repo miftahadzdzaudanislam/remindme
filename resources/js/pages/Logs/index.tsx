@@ -37,6 +37,19 @@ interface LogsPagination {
     links: { url: string | null; label: string; active: boolean }[];
 }
 
+// Badge warna untuk aktivitas
+function ActivityBadge({ activity }: { activity: string }) {
+    let color = 'bg-gray-100 text-gray-700 border-gray-300';
+    // Contoh mapping, sesuaikan dengan kebutuhan aktivitas di sistem Anda
+    if (/login|masuk/i.test(activity)) color = 'bg-green-100 text-green-700 rounded-full';
+    else if (/logout|keluar/i.test(activity)) color = 'bg-gray-200 text-gray-600 rounded-full ';
+    else if (/hapus|delete/i.test(activity)) color = 'bg-red-100 text-red-700 rounded-full';
+    else if (/edit|ubah|update/i.test(activity)) color = 'bg-yellow-100 text-yellow-700 rounded-full';
+    else if (/tambah|add|create/i.test(activity)) color = 'bg-blue-100 text-blue-700 rounded-full';
+
+    return <span className={`inline-block rounded border px-2 py-1 text-xs font-semibold ${color}`}>{activity}</span>;
+}
+
 export default function Index() {
     const { logs } = usePage<{ logs: LogsPagination }>().props;
     const logData = logs.data ?? [];
@@ -102,7 +115,9 @@ export default function Index() {
                                     {log.user?.name} <br />
                                     <span className="text-xs text-gray-500">{log.user?.email}</span>
                                 </td>
-                                <td className="border p-2">{log.activity}</td>
+                                <td className="border p-2">
+                                    <ActivityBadge activity={log.activity} />
+                                </td>
                                 <td className="border p-2">{log.details || '-'}</td>
                                 <td className="border p-2">{log.ip_address}</td>
                                 <td className="border p-2">{dayjs(log.created_at).format('DD MMM YYYY HH:mm')}</td>

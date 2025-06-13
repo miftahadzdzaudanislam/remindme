@@ -10,7 +10,7 @@ import { PageProps } from '@inertiajs/core';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { Edit, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
-import Swal from 'sweetalert2'; // ⬅️ Tambahan import
+import Swal from 'sweetalert2';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Tugas Mahasiswa', href: '/tugas' }];
 
@@ -129,51 +129,63 @@ export default function Index() {
         router.patch(route('tugas.toggle', id));
     };
 
-    const tugasBelumSelesai = tugas.filter((tgs) => !tgs.is_done);
-    const tugasSelesai = tugas.filter((tgs) => tgs.is_done);
+    // Filter tugas
+    const tugasBelumSelesai = dataTugas.filter((tgs) => !tgs.is_done);
+    const tugasSelesai = dataTugas.filter((tgs) => tgs.is_done);
 
-    const renderTabel = (data: Tugas[], selesai: boolean) => (
-        <table className="w-full table-auto rounded-md border border-gray-300 shadow-sm">
-            <thead className={selesai ? 'bg-[#1E63B0] text-white' : 'bg-[#1E63B0] text-white'}>
-                <tr>
-                    <th className="border p-2">No.</th>
-                    <th className="border p-2">Judul</th>
-                    <th className="border p-2">Deskripsi</th>
-                    <th className="border p-2">Deadline</th>
-                    <th className="border p-2">Prioritas</th>
-                    <th className="border p-2">Mata Kuliah</th>
-                    <th className="border p-2">Aksi</th>
-                    <th className="border p-2">Status</th>
-                </tr>
-            </thead>
-            <tbody>
+    // List Card Renderer
+    const renderListCard = (data: Tugas[], selesai: boolean) => (
+        <>
+            <div className="flex flex-col gap-4">
                 {data.length === 0 ? (
-                    <tr>
-                        <td colSpan={8} className="border p-4 text-center text-gray-600 italic">
-                            Tidak ada tugas {selesai ? 'selesai' : 'yang belum selesai'}.
-                        </td>
-                    </tr>
+                    <div className="rounded-lg bg-gray-100 p-6 text-center text-gray-600 italic">
+                        Tidak ada tugas {selesai ? 'selesai' : 'yang belum selesai'}.
+                    </div>
                 ) : (
-                    data.map((tgs, idx) => (
-                        <tr
+                    data.map((tgs) => (
+                        <div
                             key={tgs.id}
-                            className={`transition-colors odd:bg-white even:bg-gray-50 hover:${selesai ? 'bg-green-50' : 'bg-violet-50'}`}
+                            className={`flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all md:flex-row md:items-center md:justify-between ${
+                                selesai ? 'opacity-70' : ''
+                            }`}
                         >
-                            <td className="border p-2">{idx + 1}</td>
-                            <td className={`border p-2 ${selesai && 'text-gray-500 line-through'}`}>{tgs.judul}</td>
-                            <td className={`border p-2 ${selesai && 'text-gray-500 line-through'}`}>{tgs.deskripsi}</td>
-                            <td className={`border p-2 ${selesai && 'text-gray-500 line-through'}`}>
-                                {new Date(tgs.deadline).toLocaleDateString('id-ID', {
-                                    day: '2-digit',
-                                    month: '2-digit',
-                                    year: 'numeric',
-                                })}
-                            </td>
-                            <td className={`border p-2 capitalize ${selesai && 'text-gray-500 line-through'}`}>{tgs.prioritas}</td>
-                            <td className={`border p-2 ${selesai && 'text-gray-500 line-through'}`}>
-                                {mata_kuliahs.find((mk) => mk.id === tgs.mata_kuliah_id)?.nama_matkul ?? tgs.mata_kuliah_id}
-                            </td>
-                            <td className="space-x-2 border p-2 text-center">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-lg font-bold ${selesai ? 'text-gray-500 line-through' : 'text-indigo-800'}`}>
+                                        {tgs.judul}
+                                    </span>
+                                    {tgs.prioritas === 'high' && (
+                                        <span className="ml-2 rounded bg-red-100 px-2 py-0.5 text-xs text-red-700">Tinggi</span>
+                                    )}
+                                    {tgs.prioritas === 'medium' && (
+                                        <span className="ml-2 rounded bg-yellow-100 px-2 py-0.5 text-xs text-yellow-700">Sedang</span>
+                                    )}
+                                    {tgs.prioritas === 'low' && (
+                                        <span className="ml-2 rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700">Rendah</span>
+                                    )}
+                                    {selesai && <span className="ml-2 rounded bg-green-100 px-2 py-0.5 text-xs text-green-700">Selesai</span>}
+                                </div>
+                                <div className={`mt-1 text-sm ${selesai ? 'text-gray-500 line-through' : 'text-gray-800'}`}>{tgs.deskripsi}</div>
+                                <div className="mt-1 flex flex-wrap gap-4 text-xs text-gray-600">
+                                    <span>
+                                        Deadline:{' '}
+                                        <span className="font-semibold">
+                                            {new Date(tgs.deadline).toLocaleDateString('id-ID', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric',
+                                            })}
+                                        </span>
+                                    </span>
+                                    <span>
+                                        Mata Kuliah:{' '}
+                                        <span className="font-semibold">
+                                            {mata_kuliahs.find((mk) => mk.id === tgs.mata_kuliah_id)?.nama_matkul ?? tgs.mata_kuliah_id}
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="mt-2 flex items-center gap-2 md:mt-0">
                                 <Button size="icon" variant="ghost" onClick={() => handleEdit(tgs)} className="h-8 w-8 cursor-pointer bg-transparent">
                                     <Edit className="h-5 w-5 text-yellow-600" />
                                 </Button>
@@ -185,44 +197,42 @@ export default function Index() {
                                 >
                                     <Trash2 className="h-5 w-5 text-red-600" />
                                 </Button>
-                            </td>
-                            <td className="border p-2 text-center">
                                 <input
                                     className="h-5 w-5 cursor-pointer accent-green-700"
                                     type="checkbox"
                                     checked={tgs.is_done}
                                     onChange={() => handleToggleDone(tgs.id)}
+                                    title="Tandai selesai"
                                 />
-                            </td>
-                        </tr>
+                            </div>
+                        </div>
                     ))
                 )}
-            </tbody>
-        </table>
+            </div>
+            {/* Pagination */}
+            <div className="mt-4 flex flex-wrap gap-2">
+                {tugas.links.map((link, idx) => (
+                    <Button
+                        key={idx}
+                        disabled={!link.url}
+                        onClick={() => link.url && router.visit(link.url)}
+                        className={link.active ? 'bg-[#1E63B0] hover:bg-[#1E63B0]  text-white border-[#1E63B0]' : ''}
+                        size="sm"
+                        dangerouslySetInnerHTML={{ __html: link.label }}
+                    />
+                ))}
+            </div>
+        </>
     );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Tugas Mahasiswa" />
             <div className="flex flex-col gap-6 p-4">
-                <h1 className="text-3xl font-semibold text-indigo-800 dark:text-white">Daftar Tugas</h1>
+                <h1 className="text-2xl font-semibold text-indigo-800 dark:text-white">Daftar Tugas</h1>
 
-                <div className="flex items-center justify-between">
-                    <div className="flex rounded-lg bg-gray-200">
-                        <button
-                            onClick={() => setTab('progress')}
-                            className={`cursor-pointer rounded-lg px-4 py-2 font-medium ${tab === 'progress' ? 'bg-[#1E63B0] text-white' : 'bg-gray-200 text-gray-700'}`}
-                        >
-                            Progress
-                        </button>
-                        <button
-                            onClick={() => setTab('completed')}
-                            className={`cursor-pointer rounded-lg px-4 py-2 font-medium ${tab === 'completed' ? 'bg-[#1E63B0] text-white' : 'bg-gray-200 text-gray-700'}`}
-                        >
-                            Completed
-                        </button>
-                    </div>
-
+                {/* Tombol tambah tugas di atas tab */}
+                <div className="mb-2 flex justify-end">
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
                             <Button
@@ -328,87 +338,23 @@ export default function Index() {
                     </Dialog>
                 </div>
 
-                {tab === 'progress' ? renderTabel(tugasBelumSelesai, false) : renderTabel(tugasSelesai, true)}
-                <table className="table-auto w-full border">
-                    <thead>
-                        <tr>
-                            <th className="p-2 border">No.</th>
-                            <th className="p-2 border">Judul</th>
-                            <th className="p-2 border">Deskripsi</th>
-                            <th className="p-2 border">Deadline</th>
-                            <th className="p-2 border">Prioritas</th>
-                            <th className="p-2 border">Mata Kuliah</th>
-                            <th className="p-2 border">Aksi</th>
-                            <th className='p-2 border'>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {dataTugas.length === 0 && (
-                            <tr>
-                                <td colSpan={6} className="text-center p-4 border">
-                                    Belum ada tugas.
-                                </td>
-                            </tr>
-                        )}
-                        {dataTugas.map((tgs, idx) => (
-                            <tr key={tgs.id}>
-                                <td className="p-2 border">{idx + 1 + (tugas.current_page - 1) * 10}</td>
-                                <td className="p-2 border">{tgs.judul}</td>
-                                <td className="p-2 border">{tgs.deskripsi}</td>
-                                <td className="p-2 border">
-                                    {new Date(tgs.deadline).toLocaleDateString('id-ID', {
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric',
-                                    })}
-                                </td>
-                                <td className="p-2 border">{tgs.prioritas}</td>
-                                <td className="p-2 border">
-                                    {mata_kuliahs.find(mk => mk.id === tgs.mata_kuliah_id)?.nama_matkul ?? tgs.mata_kuliah_id}
-                                </td>
-                                <td className="p-2 border">
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => handleEdit(tgs)}
-                                        className="mr-2"
-                                    >
-                                        Edit
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        onClick={() => handleDelete(tgs.id, tgs.judul)}
-                                    >
-                                        Hapus
-                                    </Button>
-                                </td>
-                                <td className="p-2 border text-center">
-                                    <input
-                                        type="checkbox"
-                                        checked={tgs.is_done}
-                                        onChange={() => router.patch(route('tugas.toggle', tgs.id))}
-                                    />
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-
-                {/* Pagination */}
-                <div className="mt-4 flex flex-wrap gap-2">
-                    {tugas.links.map((link, idx) => (
-                        <Button
-                            key={idx}
-                            disabled={!link.url}
-                            onClick={() => link.url && router.visit(link.url)}
-                            variant={link.active ? 'default' : 'outline'}
-                            size="sm"
-                            dangerouslySetInnerHTML={{ __html: link.label }}
-                        />
-                    ))}
+                {/* Tab filter */}
+                <div className="flex w-full rounded-lg bg-gray-200 p-1">
+                    <button
+                        onClick={() => setTab('progress')}
+                        className={`flex-1 cursor-pointer rounded-lg p-2 font-medium ${tab === 'progress' ? 'bg-[#1E63B0] text-white' : 'bg-gray-200 text-gray-700'}`}
+                    >
+                        Progress
+                    </button>
+                    <button
+                        onClick={() => setTab('completed')}
+                        className={`flex-1 cursor-pointer rounded-lg px-4 py-2 font-medium ${tab === 'completed' ? 'bg-[#1E63B0] text-white' : 'bg-gray-200 text-gray-700'}`}
+                    >
+                        Completed
+                    </button>
                 </div>
 
+                {tab === 'progress' ? renderListCard(tugasBelumSelesai, false) : renderListCard(tugasSelesai, true)}
             </div>
         </AppLayout>
     );

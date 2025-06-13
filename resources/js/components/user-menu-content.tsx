@@ -3,7 +3,7 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type User } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { Home, LogOut, Settings } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 interface UserMenuContentProps {
@@ -26,7 +26,15 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
 
         if (result.isConfirmed) {
             cleanup();
-            router.post(route('logout')); // logout dengan Inertia
+            router.post(
+                route('logout'),
+                {},
+                {
+                    onSuccess: () => {
+                        window.location.href = '/';
+                    },
+                }
+            );
         }
     };
 
@@ -39,6 +47,12 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+                <DropdownMenuItem asChild>
+                    <a href="/" className="block w-full px-2 py-1.5 text-sm">
+                        <Home size={16} />
+                        <span className='ml-2'>Halaman Utama</span>
+                    </a>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('profile.edit')} as="button" prefetch onClick={cleanup}>
                         <Settings className="mr-2" />

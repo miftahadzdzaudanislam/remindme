@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { PageProps } from '@inertiajs/core';
 import { Head, usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -22,7 +23,7 @@ interface MataKuliah {
     nama_matkul: string;
     jam: string;
     ruangan: string;
-    hari: number; // 1=Senin, ..., 7=Minggu
+    hari: number | string; // Bisa number (1=Senin) atau string ('Senin')
 }
 
 interface IndexProps extends PageProps {
@@ -34,14 +35,31 @@ interface IndexProps extends PageProps {
 export default function MahasiswaDashboard() {
     const { progress, tugas_terdekat, jadwal_hari_ini } = usePage<IndexProps>().props;
 
-    // Ambil hari sekarang (0 = Minggu, 1 = Senin, ..., 6 = Sabtu)
-    const hariSekarangJs = new Date().getDay();
+    // State agar hari update otomatis tanpa refresh (real time)
+    const [hariSekarang, setHariSekarang] = useState(() => {
+        const now = new Date();
+        const jsDay = now.getDay();
+        return jsDay === 0 ? 7 : jsDay;
+    });
 
-    // Konversi ke format hari: 1=Senin ... 7=Minggu
-    const hariSekarang = hariSekarangJs === 0 ? 7 : hariSekarangJs;
+    // Nama hari Indonesia
+    const namaHari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const hariSekarangNama = namaHari[new Date().getDay()];
 
-    // Filter jadwal matkul hanya yang sesuai hari sekarang
-    const jadwalHariIniFiltered = jadwal_hari_ini.filter((mk) => mk.hari === hariSekarang);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const now = new Date();
+            const jsDay = now.getDay();
+            setHariSekarang(jsDay === 0 ? 7 : jsDay);
+        }, 60 * 1000); // update setiap menit
+
+        return () => clearInterval(interval);
+    }, []);
+
+    // Filter jadwal matkul hanya yang sesuai hari sekarang (support number/string)
+    const jadwalHariIniFiltered = jadwal_hari_ini.filter((mk) =>
+        typeof mk.hari === 'number' ? mk.hari === hariSekarang : mk.hari === hariSekarangNama,
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -50,10 +68,13 @@ export default function MahasiswaDashboard() {
             <div className="flex min-h-screen flex-col gap-6 rounded-xl bg-gradient-to-br from-indigo-50 via-white to-emerald-50 p-6 dark:from-gray-900 dark:to-gray-800">
                 <h1 className="text-3xl font-bold text-indigo-800 dark:text-white">📚 Dashboard Mahasiswa</h1>
 
+                {/* DEBUG: tampilkan data mentah */}
+                {/* <pre className="text-xs bg-white text-black">{JSON.stringify({ hariSekarang, hariSekarangNama, jadwal_hari_ini }, null, 2)}</pre> */}
+
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                     {/* Progress Tugas */}
                     <div className="rounded-2xl border border-indigo-300 bg-indigo-100 p-5 shadow-md transition hover:scale-[1.01] dark:border-indigo-700 dark:bg-indigo-900">
-                        <h2 className="mb-3 text-lg font-semibold text-indigo-900 dark:text-white">Progress Tugas</h2>
+                        <h2 className="mb-3 text-lg font-semibold text-indigo-900 dark:text-white">📈 Progress Tugas </h2>
                         <div className="mb-2 text-sm text-indigo-700 dark:text-indigo-200">Kamu sudah menyelesaikan {progress}% tugas.</div>
                         <progress
                             value={progress}
@@ -65,7 +86,7 @@ export default function MahasiswaDashboard() {
                     {/* Tugas Terdekat */}
                     <div className="rounded-2xl border border-yellow-300 bg-yellow-100 p-5 shadow-md transition hover:scale-[1.01] dark:border-yellow-700 dark:bg-yellow-900">
                         <h2 className="mb-3 text-lg font-semibold text-yellow-800 dark:text-yellow-100">📝 Tugas Terdekat</h2>
-                        <ul className="space-y-3">
+                        <ul className="max-h-32 space-y-3 overflow-y-auto pr-2">
                             {tugas_terdekat.length > 0 ? (
                                 tugas_terdekat.map((tugas) => (
                                     <li
@@ -85,7 +106,7 @@ export default function MahasiswaDashboard() {
                     {/* Jadwal Hari Ini */}
                     <div className="rounded-2xl border border-emerald-300 bg-emerald-100 p-5 shadow-md transition hover:scale-[1.01] dark:border-emerald-700 dark:bg-emerald-900">
                         <h2 className="mb-3 text-lg font-semibold text-emerald-800 dark:text-emerald-100">📅 Jadwal Hari Ini</h2>
-                        <ul className="space-y-3">
+                        <ul className="max-h-32 space-y-3 overflow-y-auto pr-2">
                             {jadwalHariIniFiltered.length > 0 ? (
                                 jadwalHariIniFiltered.map((mk) => (
                                     <li
