@@ -63,7 +63,11 @@ https://templatemo.com/tm-586-scholar
                     <!-- ***** Menu Start ***** -->
                     <ul class="nav">
                       <li class="scroll-to-section"><a href="#top" class="active">Home</a></li>
+                      @if (Auth::check())
+                      @if (Auth::user()->role === 'mahasiswa')
                       <li class="scroll-to-section"><a href="#task">Task</a></li>
+                      @endif
+                      @endif
                       <li class="scroll-to-section"><a href="#services">Services</a></li>
                       <li class="scroll-to-section"><a href="#team">Team</a></li>                      
                       {{-- Jika belum login --}}
@@ -75,9 +79,9 @@ https://templatemo.com/tm-586-scholar
                     {{-- Jika sudah login --}}
                     @if(Auth::check())
                       @if(Auth::user()->role === 'mahasiswa')
-                          <li><a href="{{ route('mahasiswa.dashboard') }}">Dashboard Mahasiswa</a></li>
+                          <li><a href="{{ route('mahasiswa.dashboard') }}">Dashboard</a></li>
                       @elseif(Auth::user()->role === 'admin')
-                          <li><a href="{{ route('admin.dashboard') }}">Dashboard Admin</a></li>
+                          <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                       @endif
                     @endif
 
