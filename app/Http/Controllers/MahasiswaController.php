@@ -310,8 +310,32 @@ class MahasiswaController extends Controller
         $tglDeadline    = now()->parse($tugas->deadline)->startOfDay();
         $hariIni        = now()->startOfDay();
 
-        $pesan3hari = "Halo, ini pengingat bahwa tugas '{$tugas->judul}' akan jatuh tempo 3 hari lagi.";
-        $pesanDeadline = "Hari ini adalah deadline untuk tugas '{$tugas->judul}'. Jangan lupa diselesaikan ya!";
+        $mahasiswa = $tugas->user->name ?? 'Mahasiswa';
+        $matkul = $tugas->mata_kuliah->nama_matkul ?? '-';
+
+        $pesan3hari = "📌 Daily Reminder – Deadline Tugas
+Halo {$mahasiswa},
+
+Kami ingin mengingatkan bahwa deadline pengumpulan tugas '{$tugas->judul}' untuk mata kuliah '{$matkul}' tinggal 3 hari lagi.
+Masih ada waktu untuk menyelesaikan dan merapikan tugasnya, jadi manfaatkan kesempatan ini sebaik mungkin ya. Lebih enak kalau bisa selesai lebih awal, biar nggak terburu-buru saat mendekati batas waktu.
+
+Semangat mengerjakan! Kamu pasti bisa 💪✨
+
+Terima kasih 😊
+Salam,
+Tim RemindMe";
+
+        $pesanDeadline = "📌 Daily Reminder – Deadline Tugas
+Halo {$mahasiswa},
+
+Ini adalah pengingat bahwa hari ini merupakan batas akhir pengumpulan tugas '{$tugas->judul}' untuk mata kuliah '{$matkul}'.
+Pastikan tugasnya sudah selesai dan dikumpulkan tepat waktu, ya. Jangan lupa juga untuk melakukan pengecekan akhir agar semuanya sesuai dengan instruksi.
+
+Semangat menyelesaikannya—selangkah lagi selesai! 💪
+
+Terima kasih 😊
+Salam,
+Tim RemindMe";
 
         if ($hariIni->eq($tgl3hariSebelum) || $hariIni->eq($tglDeadline)) {
             $pesan = $hariIni->eq($tgl3hariSebelum) ? $pesan3hari : $pesanDeadline;

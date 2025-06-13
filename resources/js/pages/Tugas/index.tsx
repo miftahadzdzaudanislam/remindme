@@ -243,8 +243,8 @@ export default function Index() {
                                 <td className="p-2 border">{tgs.deskripsi}</td>
                                 <td className="p-2 border">
                                     {new Date(tgs.deadline).toLocaleDateString('id-ID', {
-                                        day: '2-digit',
-                                        month: '2-digit',
+                                        day: 'numeric',
+                                        month: 'long',
                                         year: 'numeric',
                                     })}
                                 </td>
