@@ -42,7 +42,7 @@ export default function GoogleLoginButton({ setIsSignedIn }: { setIsSignedIn: (v
   });
 
   return (
-    <Button onClick={() => login()}>
+    <Button className='bg-[#1E63B0] cursor-pointer hover:bg-[#174a7a]' onClick={() => login()}>
       Login dengan Google
     </Button>
   );
