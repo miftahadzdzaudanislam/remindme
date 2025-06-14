@@ -133,7 +133,7 @@ export default function Index() {
               })
             : post(route('matkul.store'), {
                   onSuccess: () => {
-                      Swal.fire('Berhasil!', successMessage, 'success');
+                      Swal.fire('Berhasil!', successMessage, 'success',);
                       reset();
                       setIsDialogOpen(false);
                   },

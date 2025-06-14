@@ -174,9 +174,9 @@ https://templatemo.com/tm-586-scholar
     <p class="text-center text-gray-600">Tidak ada tugas yang tersedia.</p>
   @else
     @foreach ($tugas_terdekat as $tugas)
-      <div class="col-lg-12 col-md-6 mb-4 mt-10">
+      <div class="col-md-12 mb-6">
         <div class="item border rounded-lg p-4 shadow-sm">
-          <div class="row">
+          <div class="row g-0">
             <div class="col-lg-12">
               <ul>
                 <li>
@@ -189,7 +189,9 @@ https://templatemo.com/tm-586-scholar
                 </li>
                 <li class="mt-2">
                   <span class="text-sm text-gray-500">Deadline:</span>
-                  <h6 class="text-base text-red-600">{{ \Carbon\Carbon::parse($tugas->deadline)->translatedFormat('d F Y, H:i') }}</h6>
+                  <h6 class="text-base text-red-600">
+                    {{ \Carbon\Carbon::parse($tugas->deadline)->translatedFormat('d F Y, H:i') }}
+                  </h6>
                 </li>
               </ul>
             </div>
@@ -199,7 +201,6 @@ https://templatemo.com/tm-586-scholar
     @endforeach
   @endif
 @endif
-
   </div>
 </div>
 
@@ -315,114 +316,7 @@ https://templatemo.com/tm-586-scholar
     </div>
   </div>
 
-  <!-- <section class="section courses" id="courses" >
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12 text-center">
-          <div class="section-heading">
-            <h6>Latest Courses</h6>
-            <h2>Latest Courses</h2>
-          </div>
-        </div>
-      </div>
-      <ul class="event_filter">
-        <li>
-          <a class="is_active" href="#!" data-filter="*">Show All</a>
-        </li>
-        <li>
-          <a href="#!" data-filter=".design">Webdesign</a>
-        </li>
-        <li>
-          <a href="#!" data-filter=".development">Development</a>
-        </li>
-        <li>
-          <a href="#!" data-filter=".wordpress">Wordpress</a>
-        </li>
-      </ul>
-      <div class="row event_box">
-        <div class="col-lg-4 col-md-6 align-self-center mb-30 event_outer col-md-6 design">
-          <div class="events_item">
-            <div class="thumb">
-              <a href="#"><img src="assets/images/course-01.jpg" alt=""></a>
-              <span class="category">Webdesign</span>
-              <span class="price"><h6><em>$</em>160</h6></span>
-            </div>
-            <div class="down-content">
-              <span class="author">Stella Blair</span>
-              <h4>Learn Web Design</h4>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6 align-self-center mb-30 event_outer col-md-6  development">
-          <div class="events_item">
-            <div class="thumb">
-              <a href="#"><img src="assets/images/course-02.jpg" alt=""></a>
-              <span class="category">Development</span>
-              <span class="price"><h6><em>$</em>340</h6></span>
-            </div>
-            <div class="down-content">
-              <span class="author">Cindy Walker</span>
-              <h4>Web Development Tips</h4>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6 align-self-center mb-30 event_outer col-md-6 design wordpress">
-          <div class="events_item">
-            <div class="thumb">
-              <a href="#"><img src="assets/images/course-03.jpg" alt=""></a>
-              <span class="category">Wordpress</span>
-              <span class="price"><h6><em>$</em>640</h6></span>
-            </div>
-            <div class="down-content">
-              <span class="author">David Hutson</span>
-              <h4>Latest Web Trends</h4>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6 align-self-center mb-30 event_outer col-md-6 development">
-          <div class="events_item">
-            <div class="thumb">
-              <a href="#"><img src="assets/images/course-04.jpg" alt=""></a>
-              <span class="category">Development</span>
-              <span class="price"><h6><em>$</em>450</h6></span>
-            </div>
-            <div class="down-content">
-              <span class="author">Stella Blair</span>
-              <h4>Online Learning Steps</h4>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6 align-self-center mb-30 event_outer col-md-6 wordpress development">
-          <div class="events_item">
-            <div class="thumb">
-              <a href="#"><img src="assets/images/course-05.jpg" alt=""></a>
-              <span class="category">Wordpress</span>
-              <span class="price"><h6><em>$</em>320</h6></span>
-            </div>
-            <div class="down-content">
-              <span class="author">Sophia Rose</span>
-              <h4>Be a WordPress Master</h4>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6 align-self-center mb-30 event_outer col-md-6 wordpress design">
-          <div class="events_item">
-            <div class="thumb">
-              <a href="#"><img src="assets/images/course-06.jpg" alt=""></a>
-              <span class="category">Webdesign</span>
-              <span class="price"><h6><em>$</em>240</h6></span>
-            </div>
-            <div class="down-content">
-              <span class="author">David Hutson</span>
-              <h4>Full Stack Developer</h4>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section> -->
-
-  <div class="section fun-facts">
+<div class="section fun-facts">
     <div class="container">
       <div class="row">
         <div class="col-lg-12">
@@ -430,25 +324,25 @@ https://templatemo.com/tm-586-scholar
             <div class="row">
               <div class="col-lg-3 col-md-6">
                 <div class="counter">
-                  <h2 class="timer count-title count-number" data-to="300" data-speed="1000"></h2>
+                  <h2 class="timer count-title count-number" data-to="{{ $jumlah_mahasiswa }}" data-speed="1000">{{ $jumlah_mahasiswa }}</h2>
                    <p class="count-text ">Mahasiswa Aktif</p>
                 </div>
               </div>
               <div class="col-lg-3 col-md-6">
                 <div class="counter">
-                  <h2 class="timer count-title count-number" data-to="720" data-speed="1000"></h2>
+                  <h2 class="timer count-title count-number" data-to="{{ $jumlah_matkul }}" data-speed="1000">{{ $jumlah_matkul }}</h2>
                   <p class="count-text ">Jadwal Kuliah Tercatat</p>
                 </div>
               </div>
               <div class="col-lg-3 col-md-6">
                 <div class="counter">
-                  <h2 class="timer count-title count-number" data-to="370" data-speed="1000"></h2>
+                  <h2 class="timer count-title count-number" data-to="{{ $jumlah_tugas }}" data-speed="1000">{{ $jumlah_tugas }}</h2>
                   <p class="count-text ">Tugas Tercatat</p>
                 </div>
               </div>
               <div class="col-lg-3 col-md-6">
                 <div class="counter end">
-                  <h2 class="timer count-title count-number" data-to="290" data-speed="1000"></h2>
+                  <h2 class="timer count-title count-number" data-to="{{ $jumlah_tugas_selesai }}" data-speed="1000">{{ $jumlah_tugas_selesai }}</h2>
                   <p class="count-text ">Tugas Terselesaikan</p>
                 </div>
               </div>
@@ -457,7 +351,7 @@ https://templatemo.com/tm-586-scholar
         </div>
       </div>
     </div>
-  </div>
+</div>
 
   <div class="team section" id="team">
   <div class="container">
@@ -468,7 +362,7 @@ https://templatemo.com/tm-586-scholar
     </div>
 
     <div class="row mt-5">
-      <div class="col-lg-3 col-md-6">
+      <div class="col-lg-3">
         <div class="team-member">
           <div class="main-content">
             <img src="{{ asset('assets/images/member-03.jpg') }}" alt="Mufadhal">

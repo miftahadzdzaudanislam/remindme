@@ -241,15 +241,15 @@ export default function Index() {
                             </DialogHeader>
 
                             <form onSubmit={handleSubmit}>
-                                <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
-                                    {/* Kolom Kiri */}
-                                    <div className="space-y-4">
-                                        <div>
-                                            <Label htmlFor="name">Nama</Label>
-                                            <Input id="name" value={data.name} onChange={(e) => setData('name', e.target.value)} required />
-                                            <InputError message={errors.name} />
-                                        </div>
-
+                                <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-4">
+                                    {/* Kolom Nama satu baris penuh */}
+                                    <div>
+                                        <Label htmlFor="name">Nama</Label>
+                                        <Input id="name" value={data.name} onChange={(e) => setData('name', e.target.value)} required />
+                                        <InputError message={errors.name} />
+                                    </div>
+                                    {/* Sisanya dua kolom */}
+                                    <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
                                         <div>
                                             <Label htmlFor="email">Email</Label>
                                             <Input
@@ -261,13 +261,11 @@ export default function Index() {
                                             />
                                             <InputError message={errors.email} />
                                         </div>
-
                                         <div>
                                             <Label htmlFor="nim">NIM</Label>
                                             <Input id="nim" value={data.nim} onChange={(e) => setData('nim', e.target.value)} required />
                                             <InputError message={errors.nim} />
                                         </div>
-
                                         <div>
                                             <Label htmlFor="jurusan">Jurusan</Label>
                                             <select
@@ -284,10 +282,6 @@ export default function Index() {
                                             </select>
                                             <InputError message={errors.jurusan} />
                                         </div>
-                                    </div>
-
-                                    {/* Kolom Kanan */}
-                                    <div className="space-y-4">
                                         <div>
                                             <Label htmlFor="phone_number">No. Telepon</Label>
                                             <Input
@@ -304,7 +298,6 @@ export default function Index() {
                                             />
                                             <InputError message={errors.phone_number} />
                                         </div>
-
                                         <div>
                                             <Label htmlFor="role">Role</Label>
                                             <select
@@ -319,7 +312,6 @@ export default function Index() {
                                             </select>
                                             <InputError message={errors.role} />
                                         </div>
-
                                         <div>
                                             <Label htmlFor="status">Status</Label>
                                             <select
@@ -335,7 +327,6 @@ export default function Index() {
                                             </select>
                                             <InputError message={errors.status} />
                                         </div>
-
                                         {!editingUser && (
                                             <>
                                                 <div>
@@ -349,7 +340,6 @@ export default function Index() {
                                                     />
                                                     <InputError message={errors.password} />
                                                 </div>
-
                                                 <div>
                                                     <Label htmlFor="password_confirmation">Konfirmasi Password</Label>
                                                     <Input
@@ -365,7 +355,6 @@ export default function Index() {
                                         )}
                                     </div>
                                 </div>
-
                                 <DialogFooter className="mt-6">
                                     <Button
                                         type="button"
@@ -493,7 +482,7 @@ export default function Index() {
                             key={idx}
                             disabled={!link.url}
                             onClick={() => link.url && router.visit(link.url)}
-                            className={link.active ? 'bg-[#1E63B0] hover:bg-[#1E63B0]  text-white border-[#1E63B0]' : ''}
+                            className={link.active ? 'border-[#1E63B0] bg-[#1E63B0] text-white hover:bg-[#1E63B0]' : ''}
                             size="sm"
                             dangerouslySetInnerHTML={{ __html: link.label }}
                         />
