@@ -311,31 +311,47 @@ class MahasiswaController extends Controller
         $hariIni        = now()->startOfDay();
 
         $mahasiswa = $tugas->user->name ?? 'Mahasiswa';
+        $judul_tugas = $tugas->judul ?? 'Tugas';
         $matkul = $tugas->mata_kuliah->nama_matkul ?? '-';
+        $deskripsi = $tugas->deskripsi ?? '-';
+        $deadline = Carbon::parse($tugas->deadline)->locale('id')->translatedFormat('d F Y');
+        $pesan3hari = <<<EOT
+📌 Daily Reminder - Deadline Tugas
+Subjek: 3 Hari Lagi Menuju Deadline!
 
-        $pesan3hari = "📌 Daily Reminder – Deadline Tugas
 Halo {$mahasiswa},
 
-Kami ingin mengingatkan bahwa deadline pengumpulan tugas '{$tugas->judul}' untuk mata kuliah '{$matkul}' tinggal 3 hari lagi.
-Masih ada waktu untuk menyelesaikan dan merapikan tugasnya, jadi manfaatkan kesempatan ini sebaik mungkin ya. Lebih enak kalau bisa selesai lebih awal, biar nggak terburu-buru saat mendekati batas waktu.
+Kami ingin mengingatkan bahwa tugas "{$judul_tugas}" dari mata kuliah {$matkul} akan jatuh tempo dalam 3 hari lagi.
 
-Semangat mengerjakan! Kamu pasti bisa 💪✨
+📄 Deskripsi: {$deskripsi}
+📅 Deadline: {$deadline}
 
+Masih ada waktu untuk menyelesaikan dan merapikan tugasnya. Lebih baik diselesaikan lebih awal agar bisa santai menjelang deadline ✨
+
+Semangat mengerjakan! Kamu pasti bisa 💪
 Terima kasih 😊
 Salam,
-Tim RemindMe";
+Tim RemindMe
+EOT;
 
-        $pesanDeadline = "📌 Daily Reminder – Deadline Tugas
+$pesanDeadline = <<<EOT
+📌 Daily Reminder - Deadline Tugas
+Subjek: Deadline Hari Ini - Jangan Lupa Tugasnya!
+
 Halo {$mahasiswa},
 
-Ini adalah pengingat bahwa hari ini merupakan batas akhir pengumpulan tugas '{$tugas->judul}' untuk mata kuliah '{$matkul}'.
-Pastikan tugasnya sudah selesai dan dikumpulkan tepat waktu, ya. Jangan lupa juga untuk melakukan pengecekan akhir agar semuanya sesuai dengan instruksi.
+Hari ini adalah batas akhir untuk tugas berjudul "{$judul_tugas}" pada mata kuliah {$matkul}.
 
-Semangat menyelesaikannya—selangkah lagi selesai! 💪
+📄 Deskripsi: {$deskripsi}
+📅 Deadline: {$deadline}
 
+Pastikan tugasnya sudah selesai dan dikumpulkan, ya. Kalau sempat, lakukan pengecekan akhir biar hasilnya makin mantap!
+
+Semangat menyelesaikannya tinggal selangkah lagi 💪
 Terima kasih 😊
 Salam,
-Tim RemindMe";
+Tim RemindMe
+EOT;
 
         if ($hariIni->eq($tgl3hariSebelum) || $hariIni->eq($tglDeadline)) {
             $pesan = $hariIni->eq($tgl3hariSebelum) ? $pesan3hari : $pesanDeadline;
