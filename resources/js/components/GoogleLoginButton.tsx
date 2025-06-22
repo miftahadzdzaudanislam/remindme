@@ -17,7 +17,7 @@ export default function GoogleLoginButton({ setIsSignedIn }: { setIsSignedIn: (v
 
       try {
         // Dapatkan refresh_token dari Express
-        const { data } = await axios.post(`${API_URL}/api/create-token`, { code });
+        const { data } = await axios.post(`${API_URL}/create-token`, { code });
         if (!data.refresh_token) {
           alert('refresh_token tidak ditemukan. Pastikan user login dengan consent screen.');
           return;

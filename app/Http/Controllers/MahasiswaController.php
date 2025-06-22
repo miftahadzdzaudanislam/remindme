@@ -81,7 +81,8 @@ class MahasiswaController extends Controller
             $englishDay = $this->getEnglishDay($validatedData['hari']);
             $startDateTime = now()->next($englishDay)->format('Y-m-d') . 'T' . $validatedData['jam'] . ':00';
 
-            $response = Http::post('http://localhost:4000/api/create-event', [
+            $response = Http::withHeaders(['Accept' => 'application/json'])
+                ->post('/api/create-event', [
                 'summary' => $validatedData['nama_matkul'],
                 'description' => 'Dosen: ' . $validatedData['nama_dosen'],
                 'location' => $validatedData['ruangan'],
@@ -126,7 +127,8 @@ class MahasiswaController extends Controller
             $englishDay = $this->getEnglishDay($validatedData['hari']);
             $startDateTime = now()->next($englishDay)->format('Y-m-d') . 'T' . $validatedData['jam'] . ':00';
 
-            $response = Http::put('http://localhost:4000/api/update-event', [
+            $response = Http::withHeaders(['Accept' => 'application/json'])
+                ->put('/api/update-event', [
                 'eventId' => $mata_kuliah->google_event_id,
                 'summary' => $validatedData['nama_matkul'],
                 'description' => 'Dosen: ' . $validatedData['nama_dosen'],
@@ -154,7 +156,8 @@ class MahasiswaController extends Controller
 
         // Hapus event Google Calendar jika ada
         if ($mata_kuliah->google_event_id && $user->google_refresh_token) {
-            $response = Http::delete('http://localhost:4000/api/delete-event', [
+            $response = Http::withHeaders(['Accept' => 'application/json'])
+                ->delete('/api/delete-event', [
                 'eventId' => $mata_kuliah->google_event_id,
                 'refresh_token' => $user->google_refresh_token,
             ]);

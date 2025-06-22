@@ -4,7 +4,7 @@
   <head>
 
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <title>RemindMe</title>
@@ -365,7 +365,7 @@ https://templatemo.com/tm-586-scholar
       <div class="col-lg-3">
         <div class="team-member">
           <div class="main-content">
-            <img src="{{ asset('assets/images/member-03.jpg') }}" alt="Mufadhal">
+            <img src="{{ asset('assets/images/Fadhal.jpg') }}" alt="Mufadhal">
             <span  class="category">Project Manager</span>
             <h4>Mufadhal</h4>
           </div>
@@ -375,7 +375,7 @@ https://templatemo.com/tm-586-scholar
       <div class="col-lg-3 col-md-6">
         <div class="team-member">
           <div class="main-content">
-            <img src="{{ asset('assets/images/member-02.jpg') }}" alt="Ade Purnamasari">
+            <img src="{{ asset('assets/images/Ade.jpg') }}" alt="Ade Purnamasari">
             <span class="category">Scrum Master</span>
             <h4>Ade Purnamasari</h4>
           </div>
@@ -385,7 +385,7 @@ https://templatemo.com/tm-586-scholar
       <div class="col-lg-3 col-md-6">
         <div class="team-member">
           <div class="main-content">
-            <img src="{{ asset('assets/images/member-03.jpg') }}" alt="Miftah A. D. Islam">
+            <img src="{{ asset('assets/images/Miftah.jpg') }}" alt="Miftah A. D. Islam">
             <span class="category">Designer &amp; Developer</span>
             <h4>Miftah A. D. Islam</h4>
           </div>
@@ -395,7 +395,7 @@ https://templatemo.com/tm-586-scholar
       <div class="col-lg-3 col-md-6">
         <div class="team-member">
           <div class="main-content">
-            <img src="{{ asset('assets/images/member-03.jpg') }}" alt="Erik Setiawan">
+            <img src="{{ asset('assets/images/Erik.jpg') }}" alt="Erik Setiawan">
             <span class="category">Designer &amp; Developer</span>
             <h4>Erik Setiawan</h4>
           </div>
@@ -406,13 +406,13 @@ https://templatemo.com/tm-586-scholar
 </div>
 
 
-   <div style="margin-top: 0;" class="team section" id="team">
+   <div style="margin-top: 0 !important;" class="team section" id="team">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-3 col-md-6">
           <div class="team-member">
             <div class="main-content">
-              <img src="{{ asset('assets/images/member-01.jpg') }}" alt="">
+              <img src="{{ asset('assets/images/Ainun.jpg') }}" alt="">
               <span class="category">Designer & Developer</span>
               <h4>Ainun Nisa W. N</h4>
             </div>
@@ -421,7 +421,7 @@ https://templatemo.com/tm-586-scholar
         <div class="col-lg-3 col-md-6">
           <div class="team-member">
             <div class="main-content">
-              <img src="{{ asset('assets/images/member-03.jpg') }}" alt="">
+              <img src="{{ asset('assets/images/Egi.jpg') }}" alt="">
               <span class="category">Media Kreatif</span>
               <h4>Egi Vrinaldi A. F</h4>
             </div>
@@ -430,7 +430,7 @@ https://templatemo.com/tm-586-scholar
         <div class="col-lg-3 col-md-6">
           <div class="team-member">
             <div class="main-content">
-              <img src="{{ asset('assets/images/member-02.jpg') }}" alt="">
+              <img src="{{ asset('assets/images/Naila.jpg') }}" alt="">
               <span class="category">Media Kreatif</span>
               <h4>Naila Fitriani H.</h4>              
             </div>

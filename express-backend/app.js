@@ -21,7 +21,7 @@ app.get('/', async (req, res) => {
   res.send({ message: 'Google Calendar API Ready 🗓️' });
 });
 
-app.use('/api/calendar', require('./routes/googleCalendar'));
+// app.use('/api/calendar', require('./routes/googleCalendar'));
 
 app.use('/api', require('./routes/googleCalendar'));
 
