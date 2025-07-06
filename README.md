@@ -1,9 +1,8 @@
 <p align="center">
-  <a href="#" target="_blank" >
-    <img src="https://raw.githubusercontent.com/miftahadzdzaudanislam/remindme/blob/main/public/logo-remindMe.png" alt="Logo AnakSehat" style="border-radius: 50%; width: 150px;">
+  <a href="#" target="_blank">
+    <img src="https://github.com/miftahadzdzaudanislam/remindme/blob/main/public/logo-remindMe.png?raw=true" alt="Logo RemindMe" width="150" style="border-radius: 50%;">
   </a>
 </p>
-
 
 ---
 
